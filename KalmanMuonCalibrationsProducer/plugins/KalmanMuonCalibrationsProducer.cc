@@ -22,7 +22,7 @@
 // Kalman Muon Corrections 
 //#include "KaMuCa/Calibration/interface/KalmanMuonCalibrator.h"
 // Rochester Corrections
-#include "hcc_v2/KalmanMuonCalibrationsProducer/src/RoccoR.cc"
+#include "Hcc/KalmanMuonCalibrationsProducer/src/RoccoR.cc"
 //
 // class declaration
 //
@@ -86,10 +86,10 @@ KalmanMuonCalibrationsProducer::KalmanMuonCalibrationsProducer(const edm::Parame
 //   }
    
    std::string DATAPATH = std::getenv( "CMSSW_BASE" );
-   if(year == 2018)    DATAPATH+="/src/hcc_v2/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2018UL.txt";
-   if(year == 2017)    DATAPATH+="/src/hcc_v2/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2017UL.txt";
-   if(year == 20165)    DATAPATH+="/src/hcc_v2/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2016bUL.txt"; // postVFP
-   if(year == 20160)    DATAPATH+="/src/hcc_v2/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2016aUL.txt"; // APV preVFP
+   if(year == 2018)    DATAPATH+="/src/Hcc/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2018UL.txt";
+   if(year == 2017)    DATAPATH+="/src/Hcc/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2017UL.txt";
+   if(year == 20165)    DATAPATH+="/src/Hcc/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2016bUL.txt"; // postVFP
+   if(year == 20160)    DATAPATH+="/src/Hcc/KalmanMuonCalibrationsProducer/data/roccor.Run2.v5/RoccoR2016aUL.txt"; // APV preVFP
    if(useRochester) calibrator = new RoccoR(DATAPATH); 
 
    produces<std::vector<pat::Muon> >();      

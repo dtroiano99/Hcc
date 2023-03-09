@@ -3,8 +3,7 @@ cmsrel CMSSW_12_4_3
 cd CMSSW_12_4_3/src/
 cmsenv
 git cms-init
-git clone -b 12_4_3 https://github.com/ferrico/Hcc_v2.git
-mv Hcc_v2 hcc_v2
+git clone -b 12_4_3 git@github.com:BariGEMJetTau/Hcc.git
 
 #### not needed ####
 git cms-addpkg GeneratorInterface/RivetInterface

@@ -1,6 +1,6 @@
 <export>
 </export>
-<library name="UFHZZAnalysisRun2FSRPhotons_plugins" file="*.cc">
+<library name="HccAnaFSRPhotons_plugins" file="*.cc">
    <use name="FWCore/Framework"/>
    <use name="FWCore/ParameterSet"/>
    <use name="CommonTools/UtilAlgos"/>

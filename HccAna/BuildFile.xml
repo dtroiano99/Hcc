@@ -1,0 +1,63 @@
+<use   name="DataFormats/Math"/>
+<use   name="DataFormats/Common"/>
+<use   name="DataFormats/JetReco"/>
+<use   name="DataFormats/MuonReco"/>
+<use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/ParticleFlowCandidate"/>
+<use   name="DataFormats/Provenance"/>
+<use   name="DataFormats/VertexReco"/>
+<use   name="DataFormats/GsfTrackReco"/>
+<use   name="DataFormats/TrackReco"/>
+<use   name="DataFormats/EgammaReco"/>
+<use   name="DataFormats/HLTReco"/>
+<use   name="DataFormats/CaloTowers"/>
+<use   name="FWCore/Utilities"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/ServiceRegistry"/>
+<use   name="FWCore/Common"/>
+<use   name="PhysicsTools/PatUtils"/>
+<use   name="PhysicsTools/UtilAlgos"/>
+<use   name="PhysicsTools/Utilities"/>
+<use   name="SimDataFormats/PileupSummaryInfo"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="EgammaAnalysis/ElectronTools"/> 
+<use   name="RecoEgamma/EgammaTools"/>
+<use   name="RecoParticleFlow/PFClusterTools"/>
+<use   name="DataFormats/METReco"/>
+<use   name="TrackingTools/IPTools"/>
+<use   name="TrackingTools/TransientTrack"/>
+<use   name="TrackingTools/Records"/>
+<use   name="RecoVertex/GaussianSumVertexFit"/>
+<use   name="PhysicsTools/IsolationAlgos"/>
+<!--
+<use   name="SimTracker/Records"/>
+-->
+<use   name="SimTracker/TrackAssociation"/>
+<use   name="DataFormats/EcalRecHit"/>
+<use   name="Geometry/CaloTopology"/>
+<use   name="Geometry/Records"/>
+<use   name="RecoEcal/EgammaCoreTools"/>
+<use   name="PhysicsTools/SelectorUtils"/>
+<use   name="MagneticField/Records"/>
+<!--
+<use   name="KinZfitter/KinZfitter"/>
+-->
+<use   name="RecoJets/JetProducers"/>
+<use   name="CondFormats/JetMETObjects"/>
+<!--
+<use   name="JetMETCorrections/Objects"/>
+-->
+<use   name="CondFormats/DataRecord"/>
+<!--
+<use   name="CondCore/DBCommon"/>
+-->
+<use   name="CondCore/DBOutputService"/>
+<use   name="JetMETCorrections/Algorithms"/>
+<use   name="JetMETCorrections/JetCorrector"/>
+<use   name="JetMETCorrections/Modules"/>
+<use   name="CondFormats/BTauObjects"/>
+<use   name="CondTools/BTau"/>
+<use   name="L1Trigger/L1TGlobal"/>
+<flags EDM_PLUGIN="1"/>
+<flags CXXFLAGS="-g"/>
