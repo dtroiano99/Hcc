@@ -483,7 +483,7 @@ payload = cms.string("AK4PFchs"),
 process.p = cms.Path(process.fsrPhotonSequence*
                      process.boostedMuons*
                      process.calibratedMuons*
-                     process.regressionApplication*
+                     #process.regressionApplication*
                      process.selectedElectrons*
                      #process.calibratedPatElectrons*
                      #process.egmGsfElectronIDSequence*
