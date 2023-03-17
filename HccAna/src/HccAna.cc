@@ -670,6 +670,7 @@ private:
     float jetpt_cut, jeteta_cut;
     std::string elecID;
     bool isMC, isSignal;
+    bool isHcc, isZcc, isZbb;
     float mH;
     float crossSection;
     bool weightEvents;
@@ -782,7 +783,10 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     jeteta_cut(iConfig.getUntrackedParameter<double>("eta_cut",47)),
     elecID(iConfig.getUntrackedParameter<std::string>("elecID","NonTrig")),
     isMC(iConfig.getUntrackedParameter<bool>("isMC",true)),
-    isSignal(iConfig.getUntrackedParameter<bool>("isSignal",false)),
+    isSignal(iConfig.getUntrackedParameter<bool>("isSignal",false)),    
+    isHcc(iConfig.getUntrackedParameter<bool>("isHcc",false)),
+    isZcc(iConfig.getUntrackedParameter<bool>("isZcc",true)),
+    isZbb(iConfig.getUntrackedParameter<bool>("isZbb",false)),
     mH(iConfig.getUntrackedParameter<double>("mH",0.0)),
     crossSection(iConfig.getUntrackedParameter<double>("CrossSection",1.0)),
     weightEvents(iConfig.getUntrackedParameter<bool>("weightEvents",false)),
@@ -2495,6 +2499,7 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("quark_phi", &quark_phi_float);
     tree->Branch("quark_flavour", &quark_flavour);
     tree->Branch("quark_VBF", &quark_VBF);
+    
 
 
     // Jets
@@ -2837,43 +2842,44 @@ void HccAna::setGENVariables(edm::Handle<reco::GenParticleCollection> prunedgenP
 {
   reco::GenParticleCollection::const_iterator genPart;
   bool first_quarkgen=false;
-  for(genPart = prunedgenParticles->begin(); genPart != prunedgenParticles->end(); genPart++) {
-    if(abs(genPart->pdgId())==1 || abs(genPart->pdgId())==2 || abs(genPart->pdgId())==3 || abs(genPart->pdgId())==4 || abs(genPart->pdgId())==5 || abs(genPart->pdgId())==6  || abs(genPart->pdgId())==7  || abs(genPart->pdgId())==23  || abs(genPart->pdgId())==24 || abs(genPart->pdgId())==25){
-      //cout<<"pdg: "<< abs(genPart->pdgId()) <<"  pT: "<<genPart->pt() <<"   eta: "<<genPart->eta() <<"   phi: "<<genPart->phi() <<endl;
-      const reco::Candidate * mom = genPart->mother(0);
-      //cout<<"mother: "<< mom->pdgId()<<"   pT: "<< mom->pt() <<"   eta: "<< mom->eta() <<"   phi: "<< mom->phi() <<endl;
-    bool Higgs_daughter=false;
-    int n = genPart->numberOfDaughters();
-    if(mom->pdgId()==2212 && first_quarkgen==false){
-      for(int j_d = 0; j_d < n; ++ j_d) {
-        const reco::Candidate * d = genPart->daughter( j_d );
-        if((d->pdgId())==25){
-          Higgs_daughter=true;
-        }
+  if(isHcc){
+    for(genPart = prunedgenParticles->begin(); genPart != prunedgenParticles->end(); genPart++) {
+      if(abs(genPart->pdgId())==1 || abs(genPart->pdgId())==2 || abs(genPart->pdgId())==3 || abs(genPart->pdgId())==4 || abs(genPart->pdgId())==5 || abs(genPart->pdgId())==6  || abs(genPart->pdgId())==7  || abs(genPart->pdgId())==23  || abs(genPart->pdgId())==24 || abs(genPart->pdgId())==25){
+        //cout<<"pdg: "<< abs(genPart->pdgId()) <<"  pT: "<<genPart->pt() <<"   eta: "<<genPart->eta() <<"   phi: "<<genPart->phi() <<endl;
+        const reco::Candidate * mom = genPart->mother(0);
+        //cout<<"mother: "<< mom->pdgId()<<"   pT: "<< mom->pt() <<"   eta: "<< mom->eta() <<"   phi: "<< mom->phi() <<endl;
+        bool Higgs_daughter=false;
+        int n = genPart->numberOfDaughters();
+        if(mom->pdgId()==2212 && first_quarkgen==false){
+        for(int j_d = 0; j_d < n; ++ j_d) {
+          const reco::Candidate * d = genPart->daughter( j_d );
+          if((d->pdgId())==25){
+            Higgs_daughter=true;
+          }
 
-        if(Higgs_daughter==true && (abs(d->pdgId())==1 || abs(d->pdgId())==2 || abs(d->pdgId())==3  || abs(d->pdgId())==4 || abs(d->pdgId())==5 || abs(d->pdgId())==6 || abs(d->pdgId())==7)){
-          quark_pt.push_back(d->pt());
-          quark_eta.push_back(d->eta());
-          quark_phi.push_back(d->phi());
-          quark_flavour.push_back(d->pdgId());
-          quark_VBF.push_back(true);
-          first_quarkgen=true;
-        }
+          if(Higgs_daughter==true && (abs(d->pdgId())==1 || abs(d->pdgId())==2 || abs(d->pdgId())==3  || abs(d->pdgId())==4 || abs(d->pdgId())==5 || abs(d->pdgId())==6 || abs(d->pdgId())==7)){
+            quark_pt.push_back(d->pt());
+            quark_eta.push_back(d->eta());
+            quark_phi.push_back(d->phi());
+            quark_flavour.push_back(d->pdgId());
+            quark_VBF.push_back(true);
+            first_quarkgen=true;
+          }
 
+        }
       }
-    }
 
-    if(( abs(genPart->pdgId())==4 || abs(genPart->pdgId())==5) && (mom->pdgId())==25){
-      quark_pt.push_back(genPart->pt());
-      quark_eta.push_back(genPart->eta());
-      quark_phi.push_back(genPart->phi());
-      quark_flavour.push_back(genPart->pdgId());
-      quark_VBF.push_back(false);
+      if(( abs(genPart->pdgId())==4 || abs(genPart->pdgId())==5) && (mom->pdgId())==25){
+        quark_pt.push_back(genPart->pt());
+        quark_eta.push_back(genPart->eta());
+        quark_phi.push_back(genPart->phi());
+        quark_flavour.push_back(genPart->pdgId());
+        quark_VBF.push_back(false);
+       }
+
      }
 
-		
-
-  }
+   }
 
     /*if( abs(genPart->pdgId())==1 || abs(genPart->pdgId())==2 || abs(genPart->pdgId())==3 || abs(genPart->pdgId())==4 || abs(genPart->pdgId())==5 || abs(genPart->pdgId())==17 || abs(genPart->pdgId())==21   ){
     quark_pt.push_back(genPart->pt());
@@ -2882,7 +2888,28 @@ void HccAna::setGENVariables(edm::Handle<reco::GenParticleCollection> prunedgenP
     quark_flavour.push_back(genPart->pdgId());
     }*/
 
-}
+  } // end isHcc condition
+
+  if(isZcc){
+    for(genPart = prunedgenParticles->begin(); genPart != prunedgenParticles->end(); genPart++) {
+      if(genPart->pdgId()==23 && genPart->numberOfDaughters()==2){
+        const reco::Candidate * da1 = genPart->daughter(0);
+        const reco::Candidate * da2 = genPart->daughter(1);
+        if(fabs(da1->pdgId())==fabs(da2->pdgId()) && fabs(da1->pdgId())==4){
+          //c1
+          quark_pt.push_back(da1->pt());
+          quark_eta.push_back(da1->eta());
+          quark_phi.push_back(da1->phi());
+          quark_flavour.push_back(da1->pdgId());
+          //c2
+          quark_pt.push_back(da2->pt());
+          quark_eta.push_back(da2->eta());
+          quark_phi.push_back(da2->phi());
+          quark_flavour.push_back(da2->pdgId());
+        }
+      }
+    }
+  }
 
 	edm::View<reco::GenJet>::const_iterator genjet;
 
