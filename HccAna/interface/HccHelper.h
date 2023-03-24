@@ -338,7 +338,7 @@ std::vector<pat::Electron> HccHelper::goodLooseElectrons2012(edm::Handle<edm::Vi
     for(edm::View<pat::Electron>::const_iterator elec=Electrons->begin(); elec!=Electrons->end(); ++elec) {        
 
 //        if( abs(elec->eta()) < 2.5 && elec->pt() > elPtCut) {
-        if( abs(elec->eta()) < 2.5 && elec->pt() > 0) {
+        if( abs(elec->eta()) < 2.5 && elec->pt() > elPtCut) {
             bestElectrons.push_back(*elec);
         }
     }
