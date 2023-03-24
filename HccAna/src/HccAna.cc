@@ -305,9 +305,12 @@ private:
     float pdfRMSup, pdfRMSdown, pdfENVup, pdfENVdown;
     // lepton variables
     vector<double> lep_pt; vector<double> lep_eta; vector<double> lep_phi; vector<double> lep_mass; vector<int> lep_ID;
-    vector<double> ALLlep_pt; vector<double> ALLlep_eta; vector<double> ALLlep_phi; vector<double> ALLlep_mass; vector<int> ALLlep_id;
+    //vector<double> ALLlep_pt; vector<double> ALLlep_eta; vector<double> ALLlep_phi; vector<double> ALLlep_mass; vector<int> ALLlep_id;
+    vector<double> Ele_pt; vector<double> Ele_eta; vector<double> Ele_phi; vector<double> Ele_mass; vector<int> Ele_id;
+/*vector<double> Ele_PF_Iso_R04;*/ vector<bool> Ele_isPassID;
+    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04;
     vector<double> AK4lep_pt; vector<double> AK4lep_eta; vector<double> AK4lep_phi; vector<double> AK4lep_mass; vector<int> AK4lep_id;
-    int Nmu, Ne; //number of vetoing muons and electrons for Zqq analysis
+    //int Nmu, Ne; //number of vetoing muons and electrons for Zqq analysis
    /* vector<double> lep_pt_genFromReco;
     vector<double> lep_pt; vector<double> lep_pterr; vector<double> lep_pterrold; 
     vector<double> lep_p; vector<double> lep_ecalEnergy; vector<int> lep_isEB; vector<int> lep_isEE;
@@ -1248,10 +1251,12 @@ jetCorrParameterSet.validKeys(keys);
     //lepton variables
 		lep_pt.clear(); lep_eta.clear(); lep_phi.clear(); lep_mass.clear(); lep_ID.clear();    
 		
-		ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
+		//ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
+		Ele_pt.clear(); Ele_eta.clear(); Ele_phi.clear(); Ele_mass.clear(); Ele_id.clear(); /*Ele_PF_Iso_R04.clear();*/ Ele_isPassID.clear();
+                Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear();
         	AK4lep_pt.clear(); AK4lep_eta.clear(); AK4lep_phi.clear(); AK4lep_mass.clear(); AK4lep_id.clear();
 
-		Nmu = 0; Ne = 0;
+	//	Nmu = 0; Ne = 0;
     /*lep_d0BS.clear();
     lep_d0PV.clear();
 	lep_numberOfValidPixelHits.clear();
@@ -2119,18 +2124,31 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("lep_eta",&lep_eta_float);
     tree->Branch("lep_phi",&lep_phi_float);
     tree->Branch("lep_mass",&lep_mass_float);
-    tree->Branch("ALLlep_id",&ALLlep_id);
-    tree->Branch("ALLlep_pt",&ALLlep_pt);
-    tree->Branch("ALLlep_eta",&ALLlep_eta);
-    tree->Branch("ALLlep_phi",&ALLlep_phi);
-    tree->Branch("ALLlep_mass",&ALLlep_mass);
+    //tree->Branch("ALLlep_id",&ALLlep_id);
+    //tree->Branch("ALLlep_pt",&ALLlep_pt);
+    //tree->Branch("ALLlep_eta",&ALLlep_eta);
+    //tree->Branch("ALLlep_phi",&ALLlep_phi);
+    //tree->Branch("ALLlep_mass",&ALLlep_mass);
+    tree->Branch("Ele_id",&Ele_id);
+    tree->Branch("Ele_pt",&Ele_pt);
+    tree->Branch("Ele_isPassID",&Ele_isPassID);
+    tree->Branch("Ele_eta",&Ele_eta);
+    tree->Branch("Ele_phi",&Ele_phi);
+    tree->Branch("Ele_mass",&Ele_mass);
+    //tree->Branch("Ele_PF_Iso_R04",&Ele_PF_Iso_R04);
+    tree->Branch("Muon_id",&Muon_id);
+    tree->Branch("Muon_pt",&Muon_pt);
+    tree->Branch("Muon_eta",&Muon_eta);
+    tree->Branch("Muon_phi",&Muon_phi);
+    tree->Branch("Muon_PF_Iso_R04",&Muon_PF_Iso_R04);
+    tree->Branch("Muon_mass",&Muon_mass);
     tree->Branch("AK4lep_id",&AK4lep_id);
     tree->Branch("AK4lep_pt",&AK4lep_pt);
     tree->Branch("AK4lep_eta",&AK4lep_eta);
     tree->Branch("AK4lep_phi",&AK4lep_phi);
     tree->Branch("AK4lep_mass",&AK4lep_mass);
-    tree->Branch("Nmu",&Nmu);
-    tree->Branch("Ne",&Ne);
+    //tree->Branch("Nmu",&Nmu);
+    //tree->Branch("Ne",&Ne);
     /*tree->Branch("lepFSR_pt",&lepFSR_pt_float);
     tree->Branch("lepFSR_eta",&lepFSR_eta_float);
     tree->Branch("lepFSR_phi",&lepFSR_phi_float);
@@ -2627,23 +2645,34 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
 
 
 	for(unsigned int jmu=0; jmu<AllMuons.size(); jmu++){
-       		ALLlep_pt.push_back(AllMuons[jmu].pt());
+       		/*ALLlep_pt.push_back(AllMuons[jmu].pt());
           	ALLlep_eta.push_back(AllMuons[jmu].eta());
           	ALLlep_phi.push_back(AllMuons[jmu].phi());
           	ALLlep_mass.push_back(AllMuons[jmu].mass());
-          	ALLlep_id.push_back(AllMuons[jmu].pdgId());
-                float Mu_PF_Iso_R04= (AllMuons[jmu].pfIsolationR04().sumChargedHadronPt + TMath::Max(AllMuons[jmu].pfIsolationR04().sumNeutralHadronEt + AllMuons[jmu].pfIsolationR04().sumPhotonEt - AllMuons[jmu].pfIsolationR04().sumPUPt/2.0,0.0))/AllMuons[jmu].pt();
-                if(AllMuons[jmu].pt()>20 && abs(AllMuons[jmu].eta())<2.4 && AllMuons[jmu].isLooseMuon() && Mu_PF_Iso_R04<0.4 ){Nmu=Nmu+1;}
+          	ALLlep_id.push_back(AllMuons[jmu].pdgId());*/
+                Muon_pt.push_back(AllMuons[jmu].pt());
+                Muon_eta.push_back(AllMuons[jmu].eta());
+                Muon_phi.push_back(AllMuons[jmu].phi());
+                Muon_mass.push_back(AllMuons[jmu].mass());
+                Muon_id.push_back(AllMuons[jmu].pdgId());
+                Muon_PF_Iso_R04.push_back((AllMuons[jmu].pfIsolationR04().sumChargedHadronPt + TMath::Max(AllMuons[jmu].pfIsolationR04().sumNeutralHadronEt + AllMuons[jmu].pfIsolationR04().sumPhotonEt - AllMuons[jmu].pfIsolationR04().sumPUPt/2.0,0.0))/AllMuons[jmu].pt());
+//                if(AllMuons[jmu].pt()>20 && abs(AllMuons[jmu].eta())<2.4 && AllMuons[jmu].isLooseMuon() && Mu_PF_Iso_R04<0.4 ){Nmu=Nmu+1;}
         }
 
 	for(unsigned int jel=0; jel<AllElectrons.size(); jel++){
-        	ALLlep_pt.push_back(AllElectrons[jel].pt());
+        	/*ALLlep_pt.push_back(AllElectrons[jel].pt());
           	ALLlep_eta.push_back(AllElectrons[jel].eta());
           	ALLlep_phi.push_back(AllElectrons[jel].phi());
           	ALLlep_mass.push_back(AllElectrons[jel].mass());
-          	ALLlep_id.push_back(AllElectrons[jel].pdgId());
-                bool isPassID   = AllElectrons[jel].electronID("cutBasedElectronID-Fall17-94X-V2-veto");
-                if(AllElectrons[jel].pt()>20 && abs(AllElectrons[jel].eta())<2.4 && isPassID){Ne=Ne+1;}
+          	ALLlep_id.push_back(AllElectrons[jel].pdgId());*/
+                Ele_pt.push_back(AllElectrons[jel].pt());
+                Ele_eta.push_back(AllElectrons[jel].eta());
+                Ele_phi.push_back(AllElectrons[jel].phi());
+                Ele_mass.push_back(AllElectrons[jel].mass());
+                Ele_id.push_back(AllElectrons[jel].pdgId());
+                //Ele_PF_Iso_R04.push_back((AllElectrons[jel].setIsolation04().sumChargedHadronPt + TMath::Max(AllElectrons[jel].setIsolation04().sumNeutralHadronEt + AllElectrons[jel].setIsolation04().sumPhotonEt - AllElectrons[jel].setIsolation04().sumPUPt/2.0,0.0))/AllElectrons[jel].pt());
+                Ele_isPassID.push_back(AllElectrons[jel].electronID("cutBasedElectronID-Fall17-94X-V2-veto"));
+//                if(AllElectrons[jel].pt()>20 && abs(AllElectrons[jel].eta())<2.4 && isPassID){Ne=Ne+1;}
          }
        	
     //L1 jets Variables
@@ -2796,11 +2825,11 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
         }
 
       //Zbb event selection
-      if(leadingAK8_pt_idx>-1&& subleadingAK8_pt_idx>-1){
-	if(AK8PuppiJets->at(leadingAK8_pt_idx).pt()>450 && abs(AK8PuppiJets->at(leadingAK8_pt_idx).eta())<2.4 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")>80 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")<110 /*&& AK8PuppiJets->at(subleadingAK8_pt_idx).pt()>200 && abs(AK8PuppiJets->at(subleadingAK8_pt_idx).eta())<2.4*/){
+      /*if(leadingAK8_pt_idx>-1&& subleadingAK8_pt_idx>-1){
+	if(AK8PuppiJets->at(leadingAK8_pt_idx).pt()>450 && abs(AK8PuppiJets->at(leadingAK8_pt_idx).eta())<2.4 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")>80 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")<110 && AK8PuppiJets->at(subleadingAK8_pt_idx).pt()>200 && abs(AK8PuppiJets->at(subleadingAK8_pt_idx).eta())<2.4){
                 if(Nmu==0 && Ne==0){passedZqqSelection=true;}
              }
-      }
+      }*/
      //end Zbb event selection
      //hlt jets
      //std::cout<<"hltPFJetForBtag size: "<< hltjets->size()<<std::endl;
