@@ -21,7 +21,7 @@ process.Timing = cms.Service("Timing",
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
@@ -31,17 +31,6 @@ process.options = cms.untracked.PSet(
 process.options.numberOfConcurrentLuminosityBlocks = 1
 
 myfilelist = cms.untracked.vstring(
-#'/store/mc/RunIISummer20UL18MiniAODv2/VBFHToCC_M-125_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2430000/02D16E44-D08D-E74A-BB3B-E508BA138921.root',
-#'/store/mc/Run3Winter22MiniAOD/WJetsToLNu_TuneCP5_13p6TeV-madgraphMLM-pythia8/MINIAODSIM/122X_mcRun3_2021_realistic_v9-v2/2820000/060c23a9-0fff-4f32-bbd5-129b748cdc6d.root',
-
-#'file:/afs/cern.ch/work/a/azaza/MC_signal/VBFHToCC/CMSSW_12_4_8/src/production/Run3_VBF_Hcc_step2_10.root',
-#'file:/afs/cern.ch/work/a/azaza/MC_signal/VBFHToCC/CMSSW_12_4_8/src/production/Run3_VBF_Hcc_step2_100.root',
-#'file:/afs/cern.ch/work/a/azaza/MC_signal/VBFHToCC/CMSSW_12_4_8/src/production/Run3_VBF_Hcc_step2_101.root',
-#'file:/afs/cern.ch/work/a/azaza/MC_signal/VBFHToCC/CMSSW_12_4_8/src/production/Run3_VBF_Hcc_step2_102.root',
-#'file:/afs/cern.ch/work/a/azaza/MC_signal/VBFHToCC/CMSSW_12_4_8/src/production/Run3_VBF_Hcc_step2_103.root',
-
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_customHLT_MINIAODSIM/221125_131404/0000/Run3_VBF_Hcc_step2_10_1.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_1.root',
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_1.root',
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_10.root',
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_100.root',
@@ -62,18 +51,6 @@ myfilelist = cms.untracked.vstring(
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_114.root',
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_115.root',
 '/store/user/azaza/VBFHToCC_M-125_TuneCP5_13p6TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v12_MINIAODSIM/221113_110430/0000/Run3_VBF_Hcc_step2_116.root'
-#untill here
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_1.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_10.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_100.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_101.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_102.root',
-#'/store/user/azaza/VBFHToCC_M-125_TuneCP5_14TeV-powheg-pythia8_Run3/124X_mcRun3_2022_realistic_v10_MINIAODSIM/220923_111616/0000/Run3_VBF_Hcc_step2_103.root',
-#'file:/afs/cern.ch/work/a/azaza/MC_production/CMSSW_12_4_8/src/Run3_VBF_Hcc_step2.root',
-#'/store/mc/RunIISummer20UL18MiniAODv2/ZH_HToCC_ZToNuNu_M-125_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2430000/06191AD3-50FA-EB46-B813-AA5F087929E3.root',
-
-
-
 )
 
 process.source = cms.Source("PoolSource",fileNames = myfilelist,
@@ -83,7 +60,7 @@ process.source = cms.Source("PoolSource",fileNames = myfilelist,
 
 process.TFileService = cms.Service("TFileService",
                                    #fileName = cms.string("prova.root")
-                                   fileName = cms.string("VBFHToCC_Run3_prova_DDX_1.root")
+                                   fileName = cms.string("VBFHToCC_Run3_prova.root")
 )
 
 # clean muons by segments 
@@ -409,6 +386,10 @@ process.Ana = cms.EDAnalyzer('HccAna',
                               beamSpotSrc  = cms.untracked.InputTag("offlineBeamSpot"),
                               conversionSrc  = cms.untracked.InputTag("reducedEgamma","reducedConversions"),
                               isMC         = cms.untracked.bool(True),
+                              isHcc         = cms.untracked.bool(True),
+                              isZqq         = cms.untracked.bool(False),
+                              isZcc         = cms.untracked.bool(False),
+                              isZbb         = cms.untracked.bool(False),
                               isSignal     = cms.untracked.bool(True),
                               mH           = cms.untracked.double(125.0),
                               CrossSection = cms.untracked.double(1),#DUMMYCROSSSECTION),
