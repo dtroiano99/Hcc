@@ -271,7 +271,7 @@ qgDatabaseVersion = 'cmssw8020_v2'
 # for hpc
 QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 # for crab
-#QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       DBParameters = cms.PSet(messageLevel = cms.untracked.int32(1)),
       timetype = cms.string('runnumber'),
@@ -345,12 +345,12 @@ process.rivetProducerHZZFid = cms.EDProducer('HZZRivetProducer',
 # Analyzer
 process.Ana = cms.EDAnalyzer('HccAna',
                               photonSrc    = cms.untracked.InputTag("slimmedPhotons"),
-                              #electronSrc  = cms.untracked.InputTag("electronsMVA"),
+                              electronSrc  = cms.untracked.InputTag("slimmedElectrons"),
                               #electronUnSSrc  = cms.untracked.InputTag("electronsMVA"),
                               electronUnSSrc  = cms.untracked.InputTag("selectedElectrons"),
                               #electronUnSSrc  = cms.untracked.InputTag("slimmedElectrons"),
                               #electronSrc  = cms.untracked.InputTag("calibratedPatElectrons"),
-                              muonSrc      = cms.untracked.InputTag("calibratedMuons"),
+                              muonSrc      = cms.untracked.InputTag("slimmedMuons"),
                               #muonSrc      = cms.untracked.InputTag("boostedMuons"),
                               tauSrc      = cms.untracked.InputTag("slimmedTaus"),
                               jetSrc       = cms.untracked.InputTag("slimmedJetsJEC"),

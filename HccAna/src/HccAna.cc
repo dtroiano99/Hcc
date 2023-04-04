@@ -265,7 +265,7 @@ private:
                            edm::Handle<BXVector<l1t::Jet> > bxvCaloJets,
                            edm::Handle<BXVector<l1t::Muon> > bxvCaloMuons,
                            edm::Handle<BXVector<l1t::EtSum> > bxvCaloHT,
-                           std::vector<pat::Muon> AllMuons, std::vector<pat::Electron> AllElectrons);
+                           std::vector<pat::Muon> AllMuons, std::vector<pat::Electron> AllElectrons, const reco::Vertex *ver);
     void setGENVariables(edm::Handle<reco::GenParticleCollection> prunedgenParticles,
                          edm::Handle<edm::View<pat::PackedGenParticle> > packedgenParticles,
                          edm::Handle<edm::View<reco::GenJet> > genJets);
@@ -306,9 +306,9 @@ private:
     // lepton variables
     vector<double> lep_pt; vector<double> lep_eta; vector<double> lep_phi; vector<double> lep_mass; vector<int> lep_ID;
     //vector<double> ALLlep_pt; vector<double> ALLlep_eta; vector<double> ALLlep_phi; vector<double> ALLlep_mass; vector<int> ALLlep_id;
-    vector<double> Ele_pt; vector<double> Ele_eta; vector<double> Ele_phi; vector<double> Ele_mass; vector<int> Ele_id;
+    vector<double> Ele_pt; vector<double> Ele_eta; vector<double> Ele_phi; vector<double> Ele_mass; vector<double> Ele_dxy; vector<double> Ele_dz; vector<int> Ele_id; vector<double> Ele_hcalIso; vector<double> Ele_ecalIso; vector<double> Ele_trackIso; vector<bool> Ele_isEB; vector<double> Ele_IsoCal; 
 /*vector<double> Ele_PF_Iso_R04;*/ vector<bool> Ele_isPassID;
-    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04;
+    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<double> Muon_dxy; vector<double> Muon_dz; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04;
     vector<double> AK4lep_pt; vector<double> AK4lep_eta; vector<double> AK4lep_phi; vector<double> AK4lep_mass; vector<int> AK4lep_id;
     //int Nmu, Ne; //number of vetoing muons and electrons for Zqq analysis
    /* vector<double> lep_pt_genFromReco;
@@ -731,8 +731,8 @@ std::string res_sf_config;
 
 HccAna::HccAna(const edm::ParameterSet& iConfig) :
     histContainer_(),
-    //elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronSrc"))),
-    elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
+    elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronSrc"))),
+    //elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
     elecUnSSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
     muonSrc_(consumes<edm::View<pat::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonSrc"))),
     //tauSrc_(consumes<edm::View<pat::Tau> >(iConfig.getUntrackedParameter<edm::InputTag>("tauSrc"))),
@@ -809,8 +809,8 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     genIsoCutMu(iConfig.getUntrackedParameter<double>("genIsoCutMu",0.35)), 
     genIsoConeSizeEl(iConfig.getUntrackedParameter<double>("genIsoConeSizeEl",0.3)), 
     genIsoConeSizeMu(iConfig.getUntrackedParameter<double>("genIsoConeSizeMu",0.3)), 
-    _elecPtCut(iConfig.getUntrackedParameter<double>("_elecPtCut",7.0)),
-    _muPtCut(iConfig.getUntrackedParameter<double>("_muPtCut",10.0)),
+    _elecPtCut(iConfig.getUntrackedParameter<double>("_elecPtCut",0.0)),
+    _muPtCut(iConfig.getUntrackedParameter<double>("_muPtCut",0.0)),
     _tauPtCut(iConfig.getUntrackedParameter<double>("_tauPtCut",20.0)),
     _phoPtCut(iConfig.getUntrackedParameter<double>("_phoPtCut",10.0)),
     BTagCut(iConfig.getUntrackedParameter<double>("BTagCut",0.4184)),/////2016: 0.6321; 2017: 0.4941; 2018: 0.4184
@@ -1249,12 +1249,12 @@ jetCorrParameterSet.validKeys(keys);
     pdfRMSup=1.0; pdfRMSdown=1.0; pdfENVup=1.0; pdfENVdown=1.0;
 
     //lepton variables
-		lep_pt.clear(); lep_eta.clear(); lep_phi.clear(); lep_mass.clear(); lep_ID.clear();    
-		
-		//ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
-		Ele_pt.clear(); Ele_eta.clear(); Ele_phi.clear(); Ele_mass.clear(); Ele_id.clear(); /*Ele_PF_Iso_R04.clear();*/ Ele_isPassID.clear();
-                Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear();
-        	AK4lep_pt.clear(); AK4lep_eta.clear(); AK4lep_phi.clear(); AK4lep_mass.clear(); AK4lep_id.clear();
+    lep_pt.clear(); lep_eta.clear(); lep_phi.clear(); lep_mass.clear(); lep_ID.clear();    
+	
+	//ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
+	Ele_pt.clear(); Ele_eta.clear(); Ele_phi.clear(); Ele_mass.clear(); Ele_dxy.clear(); Ele_dz.clear(); Ele_id.clear(); Ele_hcalIso.clear(); Ele_ecalIso.clear(); Ele_trackIso.clear(); Ele_isEB.clear(); Ele_IsoCal.clear(); /*Ele_PF_Iso_R04.clear();*/ Ele_isPassID.clear();
+    Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_dxy.clear(); Muon_dz.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear();
+    AK4lep_pt.clear(); AK4lep_eta.clear(); AK4lep_phi.clear(); AK4lep_mass.clear(); AK4lep_id.clear();
 
 	//	Nmu = 0; Ne = 0;
     /*lep_d0BS.clear();
@@ -1842,7 +1842,7 @@ if(trigConditionData && verbose)
         if (verbose) cout<<"before vector assign"<<std::endl;
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets,  hltAK4PFJetsCorrected, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
         
-				setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets, AK8PuppiJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
+				setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets, AK8PuppiJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons, PV);
 				
         //setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, hltjetsForBTag,  hltAK4PFJetsCorrected, pfJetTagCollectionParticleNetprobc , pfJetTagCollectionParticleNetprobb , pfJetTagCollectionParticleNetprobuds , pfJetTagCollectionParticleNetprobg ,pfJetTagCollectionParticleNetprobtauh ,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
@@ -2135,6 +2135,14 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("Ele_eta",&Ele_eta);
     tree->Branch("Ele_phi",&Ele_phi);
     tree->Branch("Ele_mass",&Ele_mass);
+    tree->Branch("Ele_dxy",&Ele_dxy);
+    tree->Branch("Ele_dz",&Ele_dz);
+    tree->Branch("Ele_hcalIso", &Ele_hcalIso);
+    tree->Branch("Ele_ecalIso", &Ele_ecalIso); 
+    tree->Branch("Ele_trackIso", &Ele_trackIso);
+    tree->Branch("Ele_isEB", &Ele_isEB);
+    tree->Branch("Ele_IsoCal", &Ele_IsoCal);
+
     //tree->Branch("Ele_PF_Iso_R04",&Ele_PF_Iso_R04);
     tree->Branch("Muon_id",&Muon_id);
     tree->Branch("Muon_pt",&Muon_pt);
@@ -2142,6 +2150,8 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("Muon_phi",&Muon_phi);
     tree->Branch("Muon_PF_Iso_R04",&Muon_PF_Iso_R04);
     tree->Branch("Muon_mass",&Muon_mass);
+    tree->Branch("Muon_dxy",&Muon_dxy);
+    tree->Branch("Muon_dz",&Muon_dz);
     tree->Branch("AK4lep_id",&AK4lep_id);
     tree->Branch("AK4lep_pt",&AK4lep_pt);
     tree->Branch("AK4lep_eta",&AK4lep_eta);
@@ -2589,7 +2599,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                                    edm::Handle<BXVector<l1t::EtSum> > bxvCaloHT,
                                  //edm::Handle<edm::View<pat::Muon> > muons,
                                  //edm::Handle<edm::View<pat::Electron> > electrons)
-                                   std::vector<pat::Muon> AllMuons, std::vector<pat::Electron> AllElectrons)
+                                   std::vector<pat::Muon> AllMuons, std::vector<pat::Electron> AllElectrons, const reco::Vertex *ver)
 {
 
    
@@ -2654,6 +2664,8 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                 Muon_eta.push_back(AllMuons[jmu].eta());
                 Muon_phi.push_back(AllMuons[jmu].phi());
                 Muon_mass.push_back(AllMuons[jmu].mass());
+                Muon_dxy.push_back(AllMuons[jmu].innerTrack()->dxy(ver->position()));
+                Muon_dz.push_back(AllMuons[jmu].innerTrack()->dz(ver->position()));
                 Muon_id.push_back(AllMuons[jmu].pdgId());
                 Muon_PF_Iso_R04.push_back((AllMuons[jmu].pfIsolationR04().sumChargedHadronPt + TMath::Max(AllMuons[jmu].pfIsolationR04().sumNeutralHadronEt + AllMuons[jmu].pfIsolationR04().sumPhotonEt - AllMuons[jmu].pfIsolationR04().sumPUPt/2.0,0.0))/AllMuons[jmu].pt());
 //                if(AllMuons[jmu].pt()>20 && abs(AllMuons[jmu].eta())<2.4 && AllMuons[jmu].isLooseMuon() && Mu_PF_Iso_R04<0.4 ){Nmu=Nmu+1;}
@@ -2669,6 +2681,19 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                 Ele_eta.push_back(AllElectrons[jel].eta());
                 Ele_phi.push_back(AllElectrons[jel].phi());
                 Ele_mass.push_back(AllElectrons[jel].mass());
+                Ele_dxy.push_back(AllElectrons[jel].gsfTrack()->dxy(ver->position()));
+                Ele_dz.push_back(AllElectrons[jel].gsfTrack()->dz(ver->position()));
+                Ele_hcalIso.push_back(AllElectrons[jel].dr03TkSumPt() / AllElectrons[jel].pt());
+                Ele_ecalIso.push_back(AllElectrons[jel].dr03EcalRecHitSumEt() / AllElectrons[jel].pt()); 
+                Ele_trackIso.push_back(AllElectrons[jel].dr03HcalTowerSumEt()/ AllElectrons[jel].pt()); 
+                Ele_isEB.push_back(AllElectrons[jel].isEB()); 
+                if(AllElectrons[jel].isEB()==true){
+                  Ele_IsoCal.push_back((std::max(0., AllElectrons[jel].dr03EcalRecHitSumEt() - 1.) + AllElectrons[jel].dr03HcalTowerSumEt()) /AllElectrons[jel].pt());
+                } //-1 -> pedestal subtraction needed only in the barrel
+                else{
+                  Ele_IsoCal.push_back((AllElectrons[jel].dr03EcalRecHitSumEt() + AllElectrons[jel].dr03HcalTowerSumEt()) /AllElectrons[jel].pt());
+                }
+
                 Ele_id.push_back(AllElectrons[jel].pdgId());
                 //Ele_PF_Iso_R04.push_back((AllElectrons[jel].setIsolation04().sumChargedHadronPt + TMath::Max(AllElectrons[jel].setIsolation04().sumNeutralHadronEt + AllElectrons[jel].setIsolation04().sumPhotonEt - AllElectrons[jel].setIsolation04().sumPUPt/2.0,0.0))/AllElectrons[jel].pt());
                 Ele_isPassID.push_back(AllElectrons[jel].electronID("cutBasedElectronID-Fall17-94X-V2-veto"));
