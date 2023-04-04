@@ -13,11 +13,12 @@ follow install.sh instruction
 
 # Run the ntuplizer
 - To run on Data 
-
-    cmsRun python/templateData_Run3_Hcc_cfg.py
+        
+        cmsRun python/templateData_Run3_Hcc_cfg.py
 
 - To run on MC
-    cmsRun python/templateMC_Zcc_Run3.py
+        
+        cmsRun python/templateMC_Zcc_Run3.py
 
 !IMPORTANT: change the global tag accordingly to the dataset you use in input 
 (https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/templateMC_Zcc_Run3.py#L17)
