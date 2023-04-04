@@ -20,7 +20,7 @@ process.Timing = cms.Service("Timing",
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
@@ -117,7 +117,7 @@ process.electronsMVA = cms.EDProducer("SlimmedElectronMvaIDProducer",
 )
 
 # FSR Photons
-process.load('hcc_v2.FSRPhotons.fsrPhotons_cff')
+process.load('Hcc.FSRPhotons.fsrPhotons_cff')
 
 import os
 # Jet Energy Corrections
@@ -297,6 +297,10 @@ process.Ana = cms.EDAnalyzer('HccAna',
                               beamSpotSrc  = cms.untracked.InputTag("offlineBeamSpot"),
                               conversionSrc  = cms.untracked.InputTag("reducedEgamma","reducedConversions"),
                               isMC         = cms.untracked.bool(False),
+                              isHcc         = cms.untracked.bool(False),
+                              isZcc         = cms.untracked.bool(False),
+                              isZbb         = cms.untracked.bool(False),
+                              isZqq         = cms.untracked.bool(False),
                               isSignal     = cms.untracked.bool(False),
                               mH           = cms.untracked.double(125.0),
                               CrossSection = cms.untracked.double(1.0),
@@ -334,6 +338,13 @@ process.Ana = cms.EDAnalyzer('HccAna',
                                   'HLT_QuadPFJet103_88_75_15_DoublePFBTagDeepJet_1p3_7p7_VBF1_v',
                                   'HLT_QuadPFJet105_88_76_15_DoublePFBTagDeepJet_1p3_7p7_VBF1_v',
                                   'HLT_QuadPFJet111_90_80_15_DoublePFBTagDeepJet_1p3_7p7_VBF1_v',
+                                  #AK8 for Zqq
+                                  'PFHT1050_v',
+                                  'PFJet500_v',
+                                  'AK8PFJet500_v',
+                                  'AK8PFJet400_TrimMass30_v',
+                                  'AK8PFJet420_TrimMass30_v',
+                                  'AK8PFHT800_TrimMass50_v',
                               ),
                               skimLooseLeptons = cms.untracked.int32(4),              
                               skimTightLeptons = cms.untracked.int32(4),              
