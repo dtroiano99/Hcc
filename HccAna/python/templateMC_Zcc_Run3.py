@@ -21,7 +21,7 @@ process.Timing = cms.Service("Timing",
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
@@ -41,7 +41,6 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 
 myfilelist = cms.untracked.vstring(
 '/store/user/fsimone/ZJetsToQQ_HT200to400_TuneCP5_13TeV-madgraphMLM-pythia8/124X_mcRun3_2022_realistic_v12_MINIAODSIM/230228_104322/0000/Run3_Zbb_step2_1.root',
-
 )
 
 process.source = cms.Source("PoolSource",fileNames = myfilelist,
@@ -51,7 +50,7 @@ process.source = cms.Source("PoolSource",fileNames = myfilelist,
 
 process.TFileService = cms.Service("TFileService",
                                    #fileName = cms.string("prova.root")
-                                   fileName = cms.string("ZToCC_Run3_prova.root")
+                                   fileName = cms.string("ZToQQ_Run3_HT400to600_prova.root")
 )
 
 # clean muons by segments 
@@ -378,7 +377,8 @@ process.Ana = cms.EDAnalyzer('HccAna',
                               conversionSrc  = cms.untracked.InputTag("reducedEgamma","reducedConversions"),
                               isMC         = cms.untracked.bool(True),
                               isHcc         = cms.untracked.bool(False),
-                              isZcc         = cms.untracked.bool(True),
+                              isZqq         = cms.untracked.bool(True),
+                              isZcc         = cms.untracked.bool(False),
                               isZbb         = cms.untracked.bool(False),
                               isSignal     = cms.untracked.bool(True),
                               mH           = cms.untracked.double(125.0),
