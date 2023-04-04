@@ -22,4 +22,4 @@ follow install.sh instruction
 !IMPORTANT: change the global tag accordingly to the dataset you use in input 
 (https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/templateMC_Zcc_Run3.py#L17)
 
--To submit on CRAB use the script https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/crab/crab_Zcc.py
+- To submit on CRAB use the script https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/crab/crab_Zcc.py
