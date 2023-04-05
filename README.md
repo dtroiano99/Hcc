@@ -24,3 +24,5 @@ follow install.sh instruction
 (https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/templateMC_Zcc_Run3.py#L17)
 
 - To submit on CRAB use the script https://github.com/BariGEMJetTau/Hcc/blob/main/HccAna/python/crab/crab_Zcc.py
+
+        crab submit -c crab_Zcc.py
