@@ -401,20 +401,25 @@ private:
     vector<double> AK4PuppiJets_mass;
 
     vector<float> jet_pfParticleNetAK4JetTags_probb, jet_pfParticleNetAK4JetTags_probc, jet_pfParticleNetAK4JetTags_probuds,jet_pfParticleNetAK4JetTags_probg, jet_pfParticleNetAK4JetTags_probtauh;  
+
+
+    vector<float> jet_pfDeepJetAK4JetTags_probb, jet_pfDeepJetAK4JetTags_probbb, jet_pfDeepJetAK4JetTags_problepb, jet_pfDeepJetAK4JetTags_probc, jet_pfDeepJetAK4JetTags_probuds,jet_pfDeepJetAK4JetTags_probg; 
+
+    vector<float> jet_pfDeepCSVAK4JetTags_probb, jet_pfDeepCSVAK4JetTags_probbb, jet_pfDeepCSVAK4JetTags_probc, jet_pfDeepCSVAK4JetTags_probudsg; 
     // Puppi AK8jets with ParticleNet(-MD) and DeepDoubleX taggers
 
-                int leadingAK8_pt_idx;
-                int subleadingAK8_pt_idx;
+    int leadingAK8_pt_idx;
+    int subleadingAK8_pt_idx;
 	
-		vector<double> AK8PuppiJets_pt;
-		vector<double> AK8PuppiJets_eta;
-		vector<double> AK8PuppiJets_phi;
-		vector<double> AK8PuppiJets_mass;
-                vector<double> AK8PuppiJets_softdropmass;
+    vector<double> AK8PuppiJets_pt;
+    vector<double> AK8PuppiJets_eta;
+	vector<double> AK8PuppiJets_phi;
+	vector<double> AK8PuppiJets_mass;
+    vector<double> AK8PuppiJets_softdropmass;
 	
-		vector<float> jet_pfParticleNetJetTags_probZbb, jet_pfParticleNetJetTags_probZcc, jet_pfParticleNetJetTags_probZqq, jet_pfParticleNetJetTags_probQCDbb, jet_pfParticleNetJetTags_probQCDcc, jet_pfParticleNetJetTags_probQCDb, jet_pfParticleNetJetTags_probQCDc, jet_pfParticleNetJetTags_probQCDothers, jet_pfParticleNetJetTags_probHbb, jet_pfParticleNetJetTags_probHcc, jet_pfParticleNetJetTags_probHqqqq;  
+	vector<float> jet_pfParticleNetJetTags_probZbb, jet_pfParticleNetJetTags_probZcc, jet_pfParticleNetJetTags_probZqq, jet_pfParticleNetJetTags_probQCDbb, jet_pfParticleNetJetTags_probQCDcc, jet_pfParticleNetJetTags_probQCDb, jet_pfParticleNetJetTags_probQCDc, jet_pfParticleNetJetTags_probQCDothers, jet_pfParticleNetJetTags_probHbb, jet_pfParticleNetJetTags_probHcc, jet_pfParticleNetJetTags_probHqqqq;  
 		
-		vector<float> jet_pfMassDecorrelatedParticleNetJetTags_probXbb, jet_pfMassDecorrelatedParticleNetJetTags_probXcc, jet_pfMassDecorrelatedParticleNetJetTags_probXqq, jet_pfMassDecorrelatedParticleNetJetTags_probQCDbb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDcc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers;
+	vector<float> jet_pfMassDecorrelatedParticleNetJetTags_probXbb, jet_pfMassDecorrelatedParticleNetJetTags_probXcc, jet_pfMassDecorrelatedParticleNetJetTags_probXqq, jet_pfMassDecorrelatedParticleNetJetTags_probQCDbb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDcc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers;
     vector<float> jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb, jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc, jet_pfMassIndependentDeepDoubleCvBV2JetTags_probHcc;
 
     // Jets
@@ -1325,6 +1330,10 @@ jetCorrParameterSet.validKeys(keys);
     AK4PuppiJets_mass.clear();
 
     jet_pfParticleNetAK4JetTags_probb.clear(); jet_pfParticleNetAK4JetTags_probc.clear(); jet_pfParticleNetAK4JetTags_probuds.clear(); jet_pfParticleNetAK4JetTags_probg.clear(); jet_pfParticleNetAK4JetTags_probtauh.clear();
+
+    jet_pfDeepJetAK4JetTags_probb.clear(); jet_pfDeepJetAK4JetTags_probbb.clear(); jet_pfDeepJetAK4JetTags_problepb.clear(); jet_pfDeepJetAK4JetTags_probc.clear(); jet_pfDeepJetAK4JetTags_probuds.clear(); jet_pfDeepJetAK4JetTags_probg.clear();
+
+    jet_pfDeepCSVAK4JetTags_probb.clear(); jet_pfDeepCSVAK4JetTags_probbb.clear(); jet_pfDeepCSVAK4JetTags_probc.clear(); jet_pfDeepCSVAK4JetTags_probudsg.clear();
     
     // Puppi AK8jets with ParticleNet and DeepDoubleX taggers
     leadingAK8_pt_idx = -1;
@@ -2354,11 +2363,26 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("AK4PuppiJets_phi",&AK4PuppiJets_phi_float);
     tree->Branch("AK4PuppiJets_mass",&AK4PuppiJets_mass_float);
    
+    //ParticleNet discriminants
     tree->Branch("jet_pfParticleNetAK4JetTags_probb", &jet_pfParticleNetAK4JetTags_probb);	
     tree->Branch("jet_pfParticleNetAK4JetTags_probc", &jet_pfParticleNetAK4JetTags_probc);	
     tree->Branch("jet_pfParticleNetAK4JetTags_probuds", &jet_pfParticleNetAK4JetTags_probuds);	
     tree->Branch("jet_pfParticleNetAK4JetTags_probg", &jet_pfParticleNetAK4JetTags_probg);	
     tree->Branch("jet_pfParticleNetAK4JetTags_probtauh", &jet_pfParticleNetAK4JetTags_probtauh);
+
+    //DeepJet discriminants
+    tree->Branch("jet_pfDeepJetAK4JetTags_probb",&jet_pfDeepJetAK4JetTags_probb);
+    tree->Branch("jet_pfDeepJetAK4JetTags_probbb",&jet_pfDeepJetAK4JetTags_probbb);
+    tree->Branch("jet_pfDeepJetAK4JetTags_problepb",&jet_pfDeepJetAK4JetTags_problepb); 
+    tree->Branch("jet_pfDeepJetAK4JetTags_probc",&jet_pfDeepJetAK4JetTags_probc);
+    tree->Branch("jet_pfDeepJetAK4JetTags_probuds",&jet_pfDeepJetAK4JetTags_probuds);
+    tree->Branch("jet_pfDeepJetAK4JetTags_probg",&jet_pfDeepJetAK4JetTags_probg);
+
+    //DeepCSV discriminants
+    tree->Branch("jet_pfDeepCSVAK4JetTags_probb",&jet_pfDeepCSVAK4JetTags_probb);
+    tree->Branch("jet_pfDeepCSVAK4JetTags_probbb",&jet_pfDeepCSVAK4JetTags_probbb);
+    tree->Branch("jet_pfDeepCSVAK4JetTags_probc",&jet_pfDeepCSVAK4JetTags_probc);
+    tree->Branch("jet_pfDeepCSVAK4JetTags_probudsg",&jet_pfDeepCSVAK4JetTags_probudsg);
 
 	// Puppi AK8jets with ParticleNet(-MD) and DeepDoubleX taggers
         tree->Branch("leadingAK8_pt_idx",&leadingAK8_pt_idx);
@@ -2797,6 +2821,18 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       jet_pfParticleNetAK4JetTags_probuds.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probuds"));
       jet_pfParticleNetAK4JetTags_probg.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probg"));
       jet_pfParticleNetAK4JetTags_probtauh.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probtauh"));
+
+      jet_pfDeepJetAK4JetTags_probb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:probb")); 
+      jet_pfDeepJetAK4JetTags_probbb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:probbb")); 
+      jet_pfDeepJetAK4JetTags_problepb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:problepb")); 
+      jet_pfDeepJetAK4JetTags_probc.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:probc")); 
+      jet_pfDeepJetAK4JetTags_probuds.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:probuds")); 
+      jet_pfDeepJetAK4JetTags_probg.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepFlavourJetTags:probg"));
+
+      jet_pfDeepCSVAK4JetTags_probb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probb")); 
+      jet_pfDeepCSVAK4JetTags_probbb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probbb")); 
+      jet_pfDeepCSVAK4JetTags_probc.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probc")); 
+      jet_pfDeepCSVAK4JetTags_probudsg.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probudsg"));
       
       /*bool passPFtightID_LepVeto = false;
 
