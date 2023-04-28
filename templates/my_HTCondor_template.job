@@ -1,0 +1,9 @@
+universe = vanilla
+Executable = launch_analysis_template.job
+Requirements = OpSys == "LINUX"&& (Arch != "DUMMY")
+Output = sleep_$(Cluster)_$(Process).stdout
+Error = sleep_$(Cluster)_$(Process).stderr
+Log = sleep_$(Cluster)_$(Process).log
+request_memory = 500
+notify_user = angela.zaza@ba.infn.it
+Queue
