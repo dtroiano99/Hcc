@@ -13,14 +13,16 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Services_cff')
-process.GlobalTag.globaltag='124X_dataRun3_Prompt_v10'
+process.GlobalTag.globaltag='124X_dataRun3_v14'
+#process.GlobalTag.globaltag='124X_dataRun3_v11'
+#process.GlobalTag.globaltag='124X_dataRun3_Prompt_v10'
 
 process.Timing = cms.Service("Timing",
                              summaryOnly = cms.untracked.bool(True)
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
@@ -215,10 +217,9 @@ process.slimmedJetsAK8JEC = process.updatedPatJets.clone(
 process.load("CondCore.CondDB.CondDB_cfi")
 qgDatabaseVersion = 'cmssw8020_v2'
 # for hpc
-QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+#QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 # for crab
-#QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
-#QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       DBParameters = cms.PSet(messageLevel = cms.untracked.int32(1)),
       timetype = cms.string('runnumber'),

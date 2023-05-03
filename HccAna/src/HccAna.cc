@@ -308,7 +308,7 @@ private:
     //vector<double> ALLlep_pt; vector<double> ALLlep_eta; vector<double> ALLlep_phi; vector<double> ALLlep_mass; vector<int> ALLlep_id;
     vector<double> Ele_pt; vector<double> Ele_eta; vector<double> Ele_phi; vector<double> Ele_mass; vector<double> Ele_dxy; vector<double> Ele_dz; vector<int> Ele_id; vector<double> Ele_hcalIso; vector<double> Ele_ecalIso; vector<double> Ele_trackIso; vector<bool> Ele_isEB; vector<double> Ele_IsoCal; 
 /*vector<double> Ele_PF_Iso_R04;*/ vector<bool> Ele_isPassID;
-    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<double> Muon_dxy; vector<double> Muon_dz; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04;
+    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<double> Muon_dxy; vector<double> Muon_dz; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04; vector<bool> Muon_PassLooseID;
     vector<double> AK4lep_pt; vector<double> AK4lep_eta; vector<double> AK4lep_phi; vector<double> AK4lep_mass; vector<int> AK4lep_id;
     //int Nmu, Ne; //number of vetoing muons and electrons for Zqq analysis
    /* vector<double> lep_pt_genFromReco;
@@ -1258,7 +1258,7 @@ jetCorrParameterSet.validKeys(keys);
 	
 	//ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
 	Ele_pt.clear(); Ele_eta.clear(); Ele_phi.clear(); Ele_mass.clear(); Ele_dxy.clear(); Ele_dz.clear(); Ele_id.clear(); Ele_hcalIso.clear(); Ele_ecalIso.clear(); Ele_trackIso.clear(); Ele_isEB.clear(); Ele_IsoCal.clear(); /*Ele_PF_Iso_R04.clear();*/ Ele_isPassID.clear();
-    Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_dxy.clear(); Muon_dz.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear();
+    Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_dxy.clear(); Muon_dz.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear(); Muon_PassLooseID.clear();
     AK4lep_pt.clear(); AK4lep_eta.clear(); AK4lep_phi.clear(); AK4lep_mass.clear(); AK4lep_id.clear();
 
 	//	Nmu = 0; Ne = 0;
@@ -2161,6 +2161,7 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("Muon_mass",&Muon_mass);
     tree->Branch("Muon_dxy",&Muon_dxy);
     tree->Branch("Muon_dz",&Muon_dz);
+    tree->Branch("Muon_PassLooseID", &Muon_PassLooseID);
     tree->Branch("AK4lep_id",&AK4lep_id);
     tree->Branch("AK4lep_pt",&AK4lep_pt);
     tree->Branch("AK4lep_eta",&AK4lep_eta);
@@ -2692,6 +2693,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                 Muon_dz.push_back(AllMuons[jmu].innerTrack()->dz(ver->position()));
                 Muon_id.push_back(AllMuons[jmu].pdgId());
                 Muon_PF_Iso_R04.push_back((AllMuons[jmu].pfIsolationR04().sumChargedHadronPt + TMath::Max(AllMuons[jmu].pfIsolationR04().sumNeutralHadronEt + AllMuons[jmu].pfIsolationR04().sumPhotonEt - AllMuons[jmu].pfIsolationR04().sumPUPt/2.0,0.0))/AllMuons[jmu].pt());
+                Muon_PassLooseID.push_back(AllMuons[jmu].isLooseMuon());
 //                if(AllMuons[jmu].pt()>20 && abs(AllMuons[jmu].eta())<2.4 && AllMuons[jmu].isLooseMuon() && Mu_PF_Iso_R04<0.4 ){Nmu=Nmu+1;}
         }
 
