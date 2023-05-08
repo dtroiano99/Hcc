@@ -3,7 +3,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -21,7 +21,7 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include <DataFormats/GsfTrackReco/interface/GsfTrack.h>
 
-class FSRPhotonProducer : public edm::EDProducer 
+class FSRPhotonProducer : public edm::one::EDProducer<edm::one::SharedResources> 
 {
   public:
     explicit FSRPhotonProducer(const edm::ParameterSet&);

@@ -2,7 +2,7 @@
 #include "Math/VectorUtil.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -18,7 +18,7 @@
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 #include "TMath.h"
 
-class PhotonPFIsoCalculator : public edm::EDProducer {
+class PhotonPFIsoCalculator : public edm::one::EDProducer<edm::one::SharedResources> {
 public:
   explicit PhotonPFIsoCalculator(const edm::ParameterSet&);
   ~PhotonPFIsoCalculator();
