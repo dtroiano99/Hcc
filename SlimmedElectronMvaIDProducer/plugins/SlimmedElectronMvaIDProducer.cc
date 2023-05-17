@@ -22,7 +22,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -46,7 +46,7 @@
 // class declaration
 //
 
-class SlimmedElectronMvaIDProducer : public edm::EDProducer {
+class SlimmedElectronMvaIDProducer : public edm::one::EDProducer<edm::one::SharedResources> {
    public:
       explicit SlimmedElectronMvaIDProducer(const edm::ParameterSet&);
       ~SlimmedElectronMvaIDProducer();

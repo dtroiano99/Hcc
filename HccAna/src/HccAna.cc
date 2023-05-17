@@ -37,7 +37,7 @@
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 //#include "FWCore/Framework/interface/limited/EDAnalyzerBase.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -45,7 +45,6 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -185,7 +184,7 @@
 //
 using namespace EwkCorrections;
 
-class HccAna : public edm::EDAnalyzer {
+class HccAna : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
     explicit HccAna(const edm::ParameterSet&);
     ~HccAna();
@@ -249,8 +248,8 @@ private:
                          edm::Handle<edm::View<pat::PackedGenParticle> > packedgenParticles,
                          edm::Handle<edm::View<reco::GenJet> > genJets);*/
 		void setTreeVariables( const edm::Event&, const edm::EventSetup&,
-                           std::vector<pat::Jet> goodJets, std::vector<float> goodJetQGTagger,
-                           std::vector<float> goodJetaxis2, std::vector<float> goodJetptD, std::vector<int> goodJetmult,
+                           std::vector<pat::Jet> goodJets,// std::vector<float> goodJetQGTagger,
+                           //std::vector<float> goodJetaxis2, std::vector<float> goodJetptD, std::vector<int> goodJetmult,
                            std::vector<pat::Jet> selectedMergedJets,
                            edm::Handle<edm::View<pat::Jet> > AK4PuppiJets,
                            edm::Handle<edm::View<pat::Jet> > AK8PuppiJets,
@@ -743,7 +742,8 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     //tauSrc_(consumes<edm::View<pat::Tau> >(iConfig.getUntrackedParameter<edm::InputTag>("tauSrc"))),
     //photonSrc_(consumes<edm::View<pat::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("photonSrc"))),
     jetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("jetSrc"))),
-    AK4PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK4PuppiJetSrc"))),
+    AK4PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("AK4PuppiJetSrc"))),
+    //AK4PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK4PuppiJetSrc"))),
 	AK8PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK8PuppiJetSrc"))),
     bxvCaloJetSrc_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("bxvCaloJetSrc"))),
     //hltPFJetForBtagSrc_(consumes<edm::View<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("hltPFJetForBtagSrc"))),
@@ -755,10 +755,10 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     //pfJetTagCollectionParticleNetprobtauhSrc_(consumes(iConfig.getParameter<edm::InputTag>("pfJetTagCollectionParticleNetprobtauhSrc"))),
     bxvCaloMuonSrc_(consumes<BXVector<l1t::Muon>>(iConfig.getParameter<edm::InputTag>("bxvCaloMuonSrc"))),
     bxvCaloHTSrc_(consumes<BXVector<l1t::EtSum>>(iConfig.getParameter<edm::InputTag>("bxvCaloHTSrc"))),
-    qgTagSrc_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"))),
-    axis2Src_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"))),
-    multSrc_(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"))),
-    ptDSrc_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"))),
+    //qgTagSrc_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"))),
+    //axis2Src_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"))),
+    //multSrc_(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"))),
+    //ptDSrc_(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"))),
     mergedjetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("mergedjetSrc"))),
     metSrc_(consumes<edm::View<pat::MET> >(iConfig.getUntrackedParameter<edm::InputTag>("metSrc"))),
     triggerSrc_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerSrc"))),
@@ -1182,7 +1182,7 @@ jetCorrParameterSet.validKeys(keys);
 
 
 
-    edm::Handle<edm::ValueMap<float> > qgHandle;
+    /*edm::Handle<edm::ValueMap<float> > qgHandle;
     iEvent.getByToken(qgTagSrc_, qgHandle);
 
     edm::Handle<edm::ValueMap<float> > axis2Handle;
@@ -1192,7 +1192,7 @@ jetCorrParameterSet.validKeys(keys);
     iEvent.getByToken(multSrc_, multHandle);
 
     edm::Handle<edm::ValueMap<float> > ptDHandle;
-    iEvent.getByToken(ptDSrc_, ptDHandle);
+    iEvent.getByToken(ptDSrc_, ptDHandle);*/
  
     edm::Handle<edm::View<pat::Jet> > mergedjets;
     iEvent.getByToken(mergedjetSrc_,mergedjets);
@@ -1793,17 +1793,17 @@ if(trigConditionData && verbose)
         vector<float> goodJetQGTagger, goodJetaxis2, goodJetptD; 
         vector<int> patJetmult, goodJetmult;
                 
-        for(auto jet = jets->begin();  jet != jets->end(); ++jet){
+        /*for(auto jet = jets->begin();  jet != jets->end(); ++jet){
         	 edm::RefToBase<pat::Jet> jetRef(edm::Ref<edm::View<pat::Jet> >(jets, jet - jets->begin()));
            float qgLikelihood = (*qgHandle)[jetRef];
            float axis2 = (*axis2Handle)[jetRef];
            float ptD = (*ptDHandle)[jetRef];
            int mult = (*multHandle)[jetRef];
-           patJetQGTagger.push_back(qgLikelihood);  
-           patJetaxis2.push_back(axis2);  
-           patJetmult.push_back(mult);  
-           patJetptD.push_back(ptD);  
-        }
+           //patJetQGTagger.push_back(qgLikelihood);  
+           //patJetaxis2.push_back(axis2);  
+           //patJetmult.push_back(mult);  
+           //patJetptD.push_back(ptD);  
+        }*/
                            
         for(unsigned int i = 0; i < jets->size(); ++i) {
                    
@@ -1813,7 +1813,7 @@ if(trigConditionData && verbose)
           if (verbose) cout<<"checking jetid..."<<endl;
           float jpumva=0.;
           bool passPU;
-          if (doJEC && (year==2017 || year==2018)) {
+          /*if (doJEC && (year==2017 || year==2018)) {
           	passPU = bool(jet.userInt("pileupJetId:fullId") & (1 << 0));
             jpumva=jet.userFloat("pileupJetId:fullDiscriminant");
           } else if (doJEC && (year==20160 || year==20165)) { 
@@ -1829,17 +1829,17 @@ if(trigConditionData && verbose)
          if (verbose) cout<<"pt: "<<jet.pt()<<" eta: "<<jet.eta()<<" phi: "<<jet.phi()<<" passPU: "<<passPU
                           <<" jetid: "<<jetHelper.patjetID(jet,year)<<endl;
                     
-         if( jetHelper.patjetID(jet,year)>=jetIDLevel ) {
+         if( jetHelper.patjetID(jet,year)>=jetIDLevel ) {*/
          //if(fabs(jet.eta())<jeteta_cut && jet.pt()>15.0){       
            if(fabs(jet.eta())<jeteta_cut){       
              goodJets.push_back(jet);
-             goodJetQGTagger.push_back(patJetQGTagger[i]);
+            /* goodJetQGTagger.push_back(patJetQGTagger[i]);
              goodJetaxis2.push_back(patJetaxis2[i]);
              goodJetptD.push_back(patJetptD[i]);
-             goodJetmult.push_back(patJetmult[i]);
+             goodJetmult.push_back(patJetmult[i]);*/
            }
 
-          }
+          //}
         } // all jets
 
         if(goodJets.size()>=4){
@@ -1851,7 +1851,7 @@ if(trigConditionData && verbose)
         if (verbose) cout<<"before vector assign"<<std::endl;
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets,  hltAK4PFJetsCorrected, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
         
-				setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets, AK8PuppiJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons, PV);
+				setTreeVariables(iEvent, iSetup, goodJets, selectedMergedJets, AK4PuppiJets, AK8PuppiJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons, PV);
 				
         //setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, hltjetsForBTag,  hltAK4PFJetsCorrected, pfJetTagCollectionParticleNetprobc , pfJetTagCollectionParticleNetprobb , pfJetTagCollectionParticleNetprobuds , pfJetTagCollectionParticleNetprobg ,pfJetTagCollectionParticleNetprobtauh ,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
@@ -2606,8 +2606,8 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
                                    std::vector<pat::Jet> selectedMergedJets,
                                    std::map<unsigned int, TLorentzVector> selectedFsrMap)*/
 void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& iSetup,
-                                   std::vector<pat::Jet> goodJets, std::vector<float> goodJetQGTagger,
-                                   std::vector<float> goodJetaxis2, std::vector<float> goodJetptD, std::vector<int> goodJetmult,
+                                   std::vector<pat::Jet> goodJets, //std::vector<float> goodJetQGTagger,
+                                   //std::vector<float> goodJetaxis2, std::vector<float> goodJetptD, std::vector<int> goodJetmult,
                                    std::vector<pat::Jet> selectedMergedJets,
                                    edm::Handle<edm::View<pat::Jet> > AK4PuppiJets,
                                    edm::Handle<edm::View<pat::Jet> > AK8PuppiJets,
