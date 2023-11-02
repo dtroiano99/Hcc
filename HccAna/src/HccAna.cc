@@ -415,11 +415,19 @@ private:
 	vector<double> AK8PuppiJets_phi;
 	vector<double> AK8PuppiJets_mass;
     vector<double> AK8PuppiJets_softdropmass;
-	
-	vector<float> jet_pfParticleNetJetTags_probZbb, jet_pfParticleNetJetTags_probZcc, jet_pfParticleNetJetTags_probZqq, jet_pfParticleNetJetTags_probQCDbb, jet_pfParticleNetJetTags_probQCDcc, jet_pfParticleNetJetTags_probQCDb, jet_pfParticleNetJetTags_probQCDc, jet_pfParticleNetJetTags_probQCDothers, jet_pfParticleNetJetTags_probHbb, jet_pfParticleNetJetTags_probHcc, jet_pfParticleNetJetTags_probHqqqq;  
+
+    vector<float> jet_pfParticleNetJetTags_TvsQCD,jet_pfParticleNetJetTags_WvsQCD,jet_pfParticleNetJetTags_ZvsQCD,jet_pfParticleNetJetTags_H4qvsQCD,jet_pfParticleNetJetTags_HbbvsQCD,jet_pfParticleNetJetTags_HccvsQCD;
+ 
+    vector<float> jet_pfMassDecorrelatedParticleNetJetTags_XbbVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XccVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XqqVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XggVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XttVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XtmVsQCD,jet_pfMassDecorrelatedParticleNetJetTags_XteVsQCD;	
+
+    
+    vector<float> jet_pfParticleNetJetTags_probZbb, jet_pfParticleNetJetTags_probZcc, jet_pfParticleNetJetTags_probZqq, jet_pfParticleNetJetTags_probQCDbb, jet_pfParticleNetJetTags_probQCDcc, jet_pfParticleNetJetTags_probQCDb, jet_pfParticleNetJetTags_probQCDc, jet_pfParticleNetJetTags_probQCDothers, jet_pfParticleNetJetTags_probHbb, jet_pfParticleNetJetTags_probHcc, jet_pfParticleNetJetTags_probHqqqq;  
+
 		
 	vector<float> jet_pfMassDecorrelatedParticleNetJetTags_probXbb, jet_pfMassDecorrelatedParticleNetJetTags_probXcc, jet_pfMassDecorrelatedParticleNetJetTags_probXqq, jet_pfMassDecorrelatedParticleNetJetTags_probQCDbb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDcc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDb, jet_pfMassDecorrelatedParticleNetJetTags_probQCDc, jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers;
+
     vector<float> jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb, jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc, jet_pfMassIndependentDeepDoubleCvBV2JetTags_probHcc;
+
 
     // Jets
     vector<int>    jet_iscleanH4l;
@@ -1345,8 +1353,14 @@ jetCorrParameterSet.validKeys(keys);
     AK8PuppiJets_mass.clear();
     AK8PuppiJets_softdropmass.clear();
 
+    jet_pfParticleNetJetTags_TvsQCD.clear(); jet_pfParticleNetJetTags_WvsQCD.clear(); jet_pfParticleNetJetTags_ZvsQCD.clear(); jet_pfParticleNetJetTags_H4qvsQCD.clear(); jet_pfParticleNetJetTags_HbbvsQCD.clear(); jet_pfParticleNetJetTags_HccvsQCD.clear();
+ 
+    jet_pfMassDecorrelatedParticleNetJetTags_XbbVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XccVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XqqVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XggVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XttVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XtmVsQCD.clear(); jet_pfMassDecorrelatedParticleNetJetTags_XteVsQCD.clear();
+
+    
     jet_pfParticleNetJetTags_probZbb.clear(); jet_pfParticleNetJetTags_probZcc.clear(); jet_pfParticleNetJetTags_probZqq.clear(); jet_pfParticleNetJetTags_probQCDbb .clear();  jet_pfParticleNetJetTags_probQCDcc.clear(); jet_pfParticleNetJetTags_probQCDb.clear(); jet_pfParticleNetJetTags_probQCDc.clear(); jet_pfParticleNetJetTags_probQCDothers.clear(); jet_pfParticleNetJetTags_probHbb.clear(); jet_pfParticleNetJetTags_probHcc.clear(); jet_pfParticleNetJetTags_probHqqqq.clear(); 
     jet_pfMassDecorrelatedParticleNetJetTags_probXbb.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probXcc.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probXqq.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probQCDbb.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probQCDcc.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probQCDb.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probQCDc.clear(); jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers.clear();
+
     jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb.clear(); jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc.clear(); jet_pfMassIndependentDeepDoubleCvBV2JetTags_probHcc.clear();
     
     // MET
@@ -2394,8 +2408,24 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
 	tree->Branch("AK8PuppiJets_phi",&AK8PuppiJets_phi_float);
 	tree->Branch("AK8PuppiJets_mass",&AK8PuppiJets_mass_float);
         tree->Branch("AK8PuppiJets_softdropmass",&AK8PuppiJets_softdropmass);
-	
-	tree->Branch("jet_pfParticleNetJetTags_probZbb", &jet_pfParticleNetJetTags_probZbb);
+
+ 	tree->Branch("particleNetWithMass_TvsQCD", &jet_pfParticleNetJetTags_TvsQCD);
+        tree->Branch("particleNetWithMass_WvsQCD", &jet_pfParticleNetJetTags_WvsQCD);
+        tree->Branch("particleNetWithMass_ZvsQCD", &jet_pfParticleNetJetTags_ZvsQCD);
+        tree->Branch("particleNetWithMass_H4qvsQCD", &jet_pfParticleNetJetTags_H4qvsQCD);
+        tree->Branch("particleNetWithMass_HbbvsQCD", &jet_pfParticleNetJetTags_HbbvsQCD);
+        tree->Branch("particleNetWithMass_HccvsQCD", &jet_pfParticleNetJetTags_HccvsQCD);
+
+        tree->Branch("particleNet_XbbVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XbbVsQCD);
+        tree->Branch("particleNet_XccVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XccVsQCD);
+        tree->Branch("particleNet_XqqVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XqqVsQCD);
+        tree->Branch("particleNet_XggVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XggVsQCD);
+        tree->Branch("particleNet_XttVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XttVsQCD);
+        tree->Branch("particleNet_XtmVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XtmVsQCD);
+        tree->Branch("particleNet_XteVsQCD", &jet_pfMassDecorrelatedParticleNetJetTags_XteVsQCD);	
+        
+        
+        tree->Branch("jet_pfParticleNetJetTags_probZbb", &jet_pfParticleNetJetTags_probZbb);
 	tree->Branch("jet_pfParticleNetJetTags_probZcc", &jet_pfParticleNetJetTags_probZcc);
 	tree->Branch("jet_pfParticleNetJetTags_probZqq", &jet_pfParticleNetJetTags_probZqq);
 	tree->Branch("jet_pfParticleNetJetTags_probQCDbb", &jet_pfParticleNetJetTags_probQCDbb);
@@ -2415,6 +2445,7 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
         tree->Branch("jet_pfMassDecorrelatedParticleNetJetTags_probQCDb", &jet_pfMassDecorrelatedParticleNetJetTags_probQCDb);
         tree->Branch("jet_pfMassDecorrelatedParticleNetJetTags_probQCDc", &jet_pfMassDecorrelatedParticleNetJetTags_probQCDc);
         tree->Branch("jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers", &jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers);
+
 
 	tree->Branch("jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb", &jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb);
 	tree->Branch("jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc", &jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc);
@@ -2782,6 +2813,23 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       if(AK8PuppiJets->at(jjet).pt()<leadingAK8_pt && AK8PuppiJets->at(jjet).pt()>subleadingAK8_pt){
              subleadingAK8_pt = AK8PuppiJets->at(jjet).pt();
              subleadingAK8_pt_idx = jjet;}
+     
+      jet_pfParticleNetJetTags_TvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:TvsQCD")); //ParticleNet tagger (w/ mass) top vs QCD discriminator
+      jet_pfParticleNetJetTags_WvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:WvsQCD"));//ParticleNet tagger (w/ mass) W vs QCD discriminator
+      jet_pfParticleNetJetTags_ZvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:ZvsQCD"));//ParticleNet tagger (w/ mass) Z vs QCD discriminator
+      jet_pfParticleNetJetTags_H4qvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:H4qvsQCD"));//ParticleNet tagger (w/ mass) H(->V V->qqqq) vs QCD discriminator
+      jet_pfParticleNetJetTags_HbbvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:HbbvsQCD"));//ParticleNet tagger (w/ mass) H(->bb) vs QCD discriminator
+      jet_pfParticleNetJetTags_HccvsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetDiscriminatorsJetTags:HccvsQCD"));//ParticleNet tagger (w/ mass) H(->cc) vs QCD discriminator
+ 
+ 
+      jet_pfMassDecorrelatedParticleNetJetTags_XbbVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HbbvsQCD"));//ParticleNet X->bb vs. QCD score: Xbb/(Xbb+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XccVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HccvsQCD"));//ParticleNet X->cc vs. QCD score: Xcc/(Xcc+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XqqVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HqqvsQCD"));//ParticleNet X->qq vs. QCD score: Xqq/(Xqq+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XggVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HggvsQCD"));//ParticleNet X->gg vs. QCD score: Xgg/(Xgg+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XttVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HttvsQCD"));//ParticleNet X->tau_h tau_h vs. QCD score: Xtt/(Xtt+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XtmVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HtmvsQCD"));//ParticleNet X->mu tau_h vs. QCD score: Xtm/(Xtm+QCD)
+      jet_pfMassDecorrelatedParticleNetJetTags_XteVsQCD.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetFromMiniAODAK8DiscriminatorsJetTags:HtevsQCD"));//ParticleNet X->e tau_h vs. QCD score: Xte/(Xte+QCD)
+
 
       jet_pfParticleNetJetTags_probZbb.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetJetTags:probZbb"));
       jet_pfParticleNetJetTags_probZcc.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfParticleNetJetTags:probZcc"));
@@ -2803,7 +2851,8 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       jet_pfMassDecorrelatedParticleNetJetTags_probQCDb.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassDecorrelatedParticleNetJetTags:probQCDb"));
       jet_pfMassDecorrelatedParticleNetJetTags_probQCDc.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassDecorrelatedParticleNetJetTags:probQCDc"));
       jet_pfMassDecorrelatedParticleNetJetTags_probQCDothers.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassDecorrelatedParticleNetJetTags:probQCDothers"));
-      
+  
+    
       jet_pfMassIndependentDeepDoubleBvLV2JetTags_probHbb.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassIndependentDeepDoubleBvLV2JetTags:probHbb"));// DeepDoubleX discriminator (mass-decorrelation) for H(Z)->bb vs QCD
       jet_pfMassIndependentDeepDoubleCvLV2JetTags_probHcc.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassIndependentDeepDoubleCvLV2JetTags:probHcc"));// DeepDoubleX discriminator (mass-decorrelation) for H(Z)->cc vs QCD
       jet_pfMassIndependentDeepDoubleCvBV2JetTags_probHcc.push_back(AK8PuppiJets->at(jjet).bDiscriminator("pfMassIndependentDeepDoubleCvBV2JetTags:probHcc"));// DeepDoubleX discriminator (mass-decorrelation) for H(Z)->cc vs for H(Z)->bb
