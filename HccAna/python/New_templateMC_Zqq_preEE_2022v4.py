@@ -16,6 +16,9 @@ process.load('Configuration.StandardSequences.Services_cff')
 #process.GlobalTag.globaltag='102X_upgrade2018_realistic_v18'
 process.GlobalTag.globaltag='130X_mcRun3_2022_realistic_v5' #MC2022v4
 
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun3_2022_realistic_v5','')
+
 process.Timing = cms.Service("Timing",
                              summaryOnly = cms.untracked.bool(True)
                              )
@@ -50,7 +53,7 @@ process.source = cms.Source("PoolSource",fileNames = myfilelist,
 
 process.TFileService = cms.Service("TFileService",
                                    #fileName = cms.string("prova.root")
-                                   fileName = cms.string("ZToQQ_2022_preEE.root")
+                                   fileName = cms.string("New_ZToQQ_2022_preEE.root")
 )
 
 # clean muons by segments 
@@ -164,6 +167,85 @@ import os
 #from CondCore.CondDB.CondDB_cfi  import *
 from CondCore.DBCommon.CondDBSetup_cfi import *
 
+
+# AK4 Puppi Jets JEC
+process.jec_ak4 = cms.ESSource("PoolDBESSource",
+                           CondDBSetup,
+                           connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/veto_jets/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22_22Sep2023_V2_MC.db"),
+                           toGet =  cms.VPSet(
+                              cms.PSet(
+                                 record = cms.string("JetCorrectionsRecord"),
+                                 tag = cms.string("JetCorrectorParametersCollection_Summer22_22Sep2023_V2_MC_AK4PFPuppi"),
+                                 label= cms.untracked.string("AK4PFPuppi")
+                              ),
+              )
+)
+
+# AK8 Puppi Jets JEC
+process.jec_ak8 = cms.ESSource("PoolDBESSource",
+                               CondDBSetup,
+                               connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/veto_jets/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22_22Sep2023_V2_MC.db"),
+                               toGet =  cms.VPSet(
+                                  cms.PSet(
+                                     record = cms.string("JetCorrectionsRecord"),
+                                     tag = cms.string("JetCorrectorParametersCollection_Summer22_22Sep2023_V2_MC_AK8PFPuppi"),
+                                     label= cms.untracked.string("AK8PFPuppi")
+                                  ),
+                  )
+)
+
+process.es_prefer_jec_ak4 = cms.ESPrefer('PoolDBESSource', 'jec_ak4')
+process.es_prefer_jec_ak8 = cms.ESPrefer('PoolDBESSource', 'jec_ak8')
+
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+
+
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJetsAK8'),
+   labelName = 'UpdatedJECak8',
+   jetCorrections = ('AK8PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None')  # Update: Safe to always add 'L2L3Residual' as MC contains dummy L2L3Residual corrections (always set to 1)
+)
+
+process.jecSequence_ak8 = cms.Sequence(process.patJetCorrFactorsUpdatedJECak8 * process.updatedPatJetsUpdatedJECak8)
+
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJetsPuppi'),
+   labelName = 'UpdatedJECak4',
+   jetCorrections = ('AK4PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None')  # Update: Safe to always add 'L2L3Residual' as MC contains dummy L2L3Residual corrections (always set to 1)
+)
+
+process.jecSequence_ak4 = cms.Sequence(process.patJetCorrFactorsUpdatedJECak4 * process.updatedPatJetsUpdatedJECak4)
+
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked:SubJets'),
+   labelName = 'UpdatedJECsubak4',
+   jetCorrections = ('AK4PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),  # Update: Safe to always add 'L2L3Residual' as MC contains dummy L2L3Residual corrections (always set to 1)
+   explicitJTA = False,          # needed for subjet b tagging
+   svClustering = False,        # needed for subjet b tagging (IMPORTANT: Needs to be set to False to disable ghost-association which does not work with slimmed jets)
+   fatJets = cms.InputTag('slimmedJetsAK8'), # needed for subjet b tagging
+   rParam = 0.8,                # needed for subjet b tagging
+   algo = 'ak'                  # has to be defined but is not used with svClustering=False
+)
+
+# la collezione di jet con le correzioni applicate si chiama "updatedPatJetsUpdatedJECsubak4"
+
+process.jecSequence_subak4 = cms.Sequence(process.patJetCorrFactorsUpdatedJECsubak4 * process.updatedPatJetsUpdatedJECsubak4)
+'''
+updateJetCollection(
+   process,
+   labelName = 'SoftDropSubjets',
+   #jetSource = cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked'),
+   jetSource = cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked:SubJets'),
+   jetCorrections = ('AK4PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+   algo = 'ak'                  # has to be defined but is not used with svClustering=False
+)
+#process.updatedPatJetsSoftDropSubjets.userData.userFloats.src = []
+process.jecSoftDropSubjets = cms.Sequence(process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsSoftDropSubjets)
+'''
+
 ## must be un-commented
 #era = "Summer19UL18_V5_MC"
 ### for HPC
@@ -272,6 +354,7 @@ qgDatabaseVersion = 'cmssw8020_v2'
 QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 # for crab
 #QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+
 process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       DBParameters = cms.PSet(messageLevel = cms.untracked.int32(1)),
       timetype = cms.string('runnumber'),
@@ -284,6 +367,7 @@ process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       ),
       connect = cms.string('sqlite_file:'+QGdBFile)
 )
+
 process.es_prefer_qg = cms.ESPrefer('PoolDBESSource','QGPoolDBESSource')
 process.load('RecoJets.JetProducers.QGTagger_cfi')
 process.QGTagger.srcJets = cms.InputTag( 'slimmedJetsJEC' )
@@ -354,9 +438,12 @@ process.Ana = cms.EDAnalyzer('HccAna',
                               #muonSrc      = cms.untracked.InputTag("boostedMuons"),
                               tauSrc      = cms.untracked.InputTag("slimmedTaus"),
                               jetSrc       = cms.untracked.InputTag("slimmedJetsJEC"),
-                              AK4PuppiJetSrc       = cms.InputTag("slimmedJetsPuppi"),
-			                  AK8PuppiJetSrc       = cms.untracked.InputTag("slimmedJetsAK8"),
-                              AK8PFPuppiSoftDropPackedSrc = cms.untracked.InputTag("slimmedJetsAK8PFPuppiSoftDropPacked:SubJets"),
+                              #AK4PuppiJetSrc       = cms.InputTag("slimmedJetsPuppi"),
+                              AK4PuppiJetSrc       = cms.InputTag("updatedPatJetsUpdatedJECak4"),
+			                  #AK8PuppiJetSrc       = cms.untracked.InputTag("slimmedJetsAK8"),
+                              AK8PuppiJetSrc       = cms.untracked.InputTag("updatedPatJetsUpdatedJECak8"),
+                              #AK8PFPuppiSoftDropPackedSrc = cms.untracked.InputTag("slimmedJetsAK8PFPuppiSoftDropPacked:SubJets")
+                              AK8PFPuppiSoftDropPackedSrc       = cms.untracked.InputTag("updatedPatJetsUpdatedJECsubak4"),
                               #hltPFJetForBtagSrc  = cms.InputTag("hltPFJetForBtag", "", "HLT"),
                               hltAK4PFJetsCorrectedSrc  = cms.InputTag("hltAK4PFJetsCorrected", "", "HLT"),
                               #pfJetTagCollectionParticleNetprobcSrc = cms.InputTag("hltParticleNetONNXJetTags","probc","HLT"),
@@ -466,6 +553,10 @@ process.p = cms.Path(process.fsrPhotonSequence*
                      #process.egmPhotonIDSequence*
                      #process.egammaPostRecoSeq*
  	             #process.calibratedPatElectrons*
+                     process.jecSequence_subak4*
+                     process.jecSequence_ak4*
+                     process.jecSequence_ak8*
+                     #process.jecSoftDropSubjets*
                      process.jetCorrFactors*
                      process.pileupJetIdUpdated*
                      process.slimmedJetsJEC*

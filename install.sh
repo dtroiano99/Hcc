@@ -1,9 +1,10 @@
-SCRAM_ARCH=slc7_amd64_gcc900; export SCRAM_ARCH
-cmsrel CMSSW_12_4_3
-cd CMSSW_12_4_3/src/
+SCRAM_ARCH=el8_amd64_gcc11
+export SCRAM_ARCH
+cmsrel CMSSW_13_0_13
+cd CMSSW_13_0_13/src/
 cmsenv
 git cms-init
-git clone -b 12_4_3 git@github.com:BariGEMJetTau/Hcc.git
+git clone -b main git@github.com:BariGEMJetTau/Hcc.git
 
 #### not needed ####
 git cms-addpkg GeneratorInterface/RivetInterface
