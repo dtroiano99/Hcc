@@ -22,7 +22,7 @@ process.Timing = cms.Service("Timing",
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
@@ -128,7 +128,10 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 # AK4 Puppi Jets JEC
 process.jec_ak4 = cms.ESSource("PoolDBESSource",
                            CondDBSetup,
-                           connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/veto_jets/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
+                           # for HPC
+                           #connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/AK8Tagger/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
+                           #for crab
+                           connect = cms.string("sqlite_file:src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
                            toGet =  cms.VPSet(
                               cms.PSet(
                                  record = cms.string("JetCorrectionsRecord"),
@@ -141,7 +144,10 @@ process.jec_ak4 = cms.ESSource("PoolDBESSource",
 # AK8 Puppi Jets JEC
 process.jec_ak8 = cms.ESSource("PoolDBESSource",
                                CondDBSetup,
-                               connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/veto_jets/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
+                               # for HPC
+                               #connect = cms.string("sqlite_file:/afs/cern.ch/user/d/dtroiano/BARI/AK8Tagger/CMSSW_13_0_13/src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
+                               #for crab
+                               connect = cms.string("sqlite_file:src/Hcc/HccAna/python/Summer22EE_22Sep2023_RunE_V2_DATA.db"),
                                toGet =  cms.VPSet(
                                   cms.PSet(
                                      record = cms.string("JetCorrectionsRecord"),
@@ -285,7 +291,7 @@ qgDatabaseVersion = 'cmssw8020_v2'
 # for hpc
 QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 # for crab
-#QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       DBParameters = cms.PSet(messageLevel = cms.untracked.int32(1)),
       timetype = cms.string('runnumber'),

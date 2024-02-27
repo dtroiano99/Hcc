@@ -22,7 +22,7 @@ process.Timing = cms.Service("Timing",
                              )
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1001) )
 
 process.options = cms.untracked.PSet(
         numberOfThreads = cms.untracked.uint32(2),
