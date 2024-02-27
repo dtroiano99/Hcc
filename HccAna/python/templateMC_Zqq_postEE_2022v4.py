@@ -41,6 +41,19 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 
 myfilelist = cms.untracked.vstring(
 '/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2520000/ffe3d2f1-36cd-4158-94bd-3440ba2e9739.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2530000/682963ab-a1c3-446c-85b4-9a65155c5a84.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2540000/61f3c244-6e25-4dac-bd78-ef2247256450.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/041fb2ea-e605-4591-b974-98b0a29e39f1.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/0dd65d4e-05f3-491e-87b0-3ad8819d6f3f.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/13541a38-8f78-44ae-a699-294eab3bcb09.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/19ca3f26-a051-4396-bc32-068d7147573c.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/1bf2c330-0a1a-4263-8984-e28702e67f5c.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/1c18d742-4fc5-4015-abd8-b139fd395972.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/1dad96b8-08e9-4007-8903-571b3dee1668.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/1e382092-ee12-4241-affb-c2d4dbacf5f1.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/23f510fd-e959-4b90-9950-8e225de1d1b6.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/27984379-eb8c-48d6-8119-628ac9eff423.root',
+'/store/mc/Run3Summer22EEMiniAODv4/Zto2Q-4Jets_HT-800_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/30000/2e458684-db33-4bf0-bbf3-53c23866b507.root',
 )
 
 process.source = cms.Source("PoolSource",fileNames = myfilelist,
@@ -271,7 +284,7 @@ qgDatabaseVersion = 'cmssw8020_v2'
 # for hpc
 QGdBFile = os.environ.get('CMSSW_BASE')+"/src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 # for crab
-QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
+#QGdBFile = "src/Hcc/HccAna/data/QGL_"+qgDatabaseVersion+".db"
 process.QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       DBParameters = cms.PSet(messageLevel = cms.untracked.int32(1)),
       timetype = cms.string('runnumber'),
@@ -380,6 +393,8 @@ process.Ana = cms.EDAnalyzer('HccAna',
                               isZqq         = cms.untracked.bool(True),
                               isZcc         = cms.untracked.bool(False),
                               isZbb         = cms.untracked.bool(False),
+                              ispreEE         = cms.untracked.bool(False),
+                              isBCDE         = cms.untracked.bool(False),
                               isSignal     = cms.untracked.bool(True),
                               mH           = cms.untracked.double(125.0),
                               CrossSection = cms.untracked.double(1),#DUMMYCROSSSECTION),

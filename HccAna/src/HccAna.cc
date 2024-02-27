@@ -34,7 +34,7 @@
 #include "Math/VectorUtil.h"
 #include "TClonesArray.h"
 #include "TCanvas.h"
-
+#include "TVector3.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 //#include "FWCore/Framework/interface/limited/EDAnalyzerBase.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -125,6 +125,7 @@
 #include "Hcc/HccAna/interface/HccPhotonTree.h"
 //Jets
 #include "Hcc/HccAna/interface/HccJetTree.h"
+//#include "DataFormats/JetReco/interface/CaloJet.h"
 //Final Leps
 #include "Hcc/HccAna/interface/HccFinalLepTree.h"
 //Sip
@@ -143,6 +144,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "CondFormats/JetMETObjects/interface/SimpleJetCorrectionUncertainty.h"
 
 #include <vector>
 
@@ -179,6 +181,9 @@
 
 #include "RecoVertex/KalmanVertexFit/interface/SingleTrackVertexConstraint.h"
 
+#ifdef __MAKECINT__ 
+#pragma link C++ class vector<TLorentzVector>+; 
+#endif
 //
 // class declaration
 //
@@ -212,7 +217,7 @@ private:
     edm::LumiReWeighting *lumiWeight;
     HccPileUp pileUp;
     //JES Uncertainties
-    std::unique_ptr<JetCorrectionUncertainty> jecunc;
+    //std::unique_ptr<JetCorrectionUncertainty> jecunc;
     // kfactors
     TSpline3 *kFactor_ggzz;
     std::vector<std::vector<float> > tableEwk;
@@ -253,6 +258,7 @@ private:
                            std::vector<pat::Jet> selectedMergedJets,
                            edm::Handle<edm::View<pat::Jet> > AK4PuppiJets,
                            edm::Handle<edm::View<pat::Jet> > AK8PuppiJets,
+			   edm::Handle<edm::View<pat::Jet> > AK8PFPuppiSoftDropJets,
                            //edm::Handle<std::vector<reco::PFJet>> hltjets,
                            //edm::Handle<edm::View<reco::PFJet>> hltjetsForBTag,
                            //edm::Handle<edm::View<reco::PFJet>> hltAK4PFJetsCorrected,
@@ -307,7 +313,7 @@ private:
     //vector<double> ALLlep_pt; vector<double> ALLlep_eta; vector<double> ALLlep_phi; vector<double> ALLlep_mass; vector<int> ALLlep_id;
     vector<double> Ele_pt; vector<double> Ele_eta; vector<double> Ele_phi; vector<double> Ele_mass; vector<double> Ele_dxy; vector<double> Ele_dz; vector<int> Ele_id; vector<double> Ele_hcalIso; vector<double> Ele_ecalIso; vector<double> Ele_trackIso; vector<bool> Ele_isEB; vector<double> Ele_IsoCal; 
 /*vector<double> Ele_PF_Iso_R04;*/ vector<bool> Ele_isPassID;
-    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<double> Muon_dxy; vector<double> Muon_dz; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04; vector<bool> Muon_PassLooseID;
+    vector<double> Muon_pt; vector<double> Muon_eta; vector<double> Muon_phi; vector<double> Muon_mass; vector<double> Muon_dxy; vector<double> Muon_dz; vector<int> Muon_id; vector<double> Muon_PF_Iso_R04; vector<bool> Muon_PassLooseID; vector<bool> Muon_isPF;
     vector<double> AK4lep_pt; vector<double> AK4lep_eta; vector<double> AK4lep_phi; vector<double> AK4lep_mass; vector<int> AK4lep_id;
     //int Nmu, Ne; //number of vetoing muons and electrons for Zqq analysis
    /* vector<double> lep_pt_genFromReco;
@@ -391,14 +397,36 @@ private:
     vector<double> hltAK4PFJetsCorrected_eta;
     vector<double> hltAK4PFJetsCorrected_phi;
     vector<double> hltAK4PFJetsCorrected_mass;
+
+    // Instantiate uncertainty sources
+    static const int nsrc = 29;
+    const char* srcnames[nsrc] = {
+            "AbsoluteMPFBias","AbsoluteScale","AbsoluteStat","FlavorQCD","Fragmentation","PileUpDataMC","PileUpPtBB","PileUpPtEC1","PileUpPtEC2","PileUpPtHF","PileUpPtRef","RelativeFSR","RelativeJEREC1","RelativeJEREC2","RelativeJERHF","RelativePtBB","RelativePtEC1","RelativePtEC2","RelativePtHF","RelativeBal","RelativeSample","RelativeStatEC","RelativeStatFSR","RelativeStatHF","SinglePionECAL","SinglePionHCAL","TimePtEta","AbsoluteSample","AbsoluteFlavMap"
+    };
+    vector<JetCorrectionUncertainty*> vsrc;
+    //vsrc.reserve(nsrc);
     
     // Puppi AK4jets with ParticleNet taggers
-
+    bool JetVetoMap;
     vector<double> AK4PuppiJets_pt;
     vector<double> AK4PuppiJets_eta;
     vector<double> AK4PuppiJets_phi;
     vector<double> AK4PuppiJets_mass;
-
+    vector<double> AK4PuppiJets_energy;
+    vector<double> AK4PuppiJets_NHF;
+    vector<double> AK4PuppiJets_NEF;
+    vector<double> AK4PuppiJets_NumConst;
+    vector<double> AK4PuppiJets_NM;
+    vector<double> AK4PuppiJets_MUF;
+    vector<double> AK4PuppiJets_CHF;
+    vector<double> AK4PuppiJets_CHM;
+    vector<double> AK4PuppiJets_CEF;
+    vector<double> AK4PuppiJets_EF;
+    vector<double> AK4PuppiJets_HF;
+    vector<bool> AK4PuppiJets_PFJetID;
+    vector<bool> AK4PuppiJets_overlapPFmuons;
+    vector<bool> AK4PuppiJets_isloose;
+    
     vector<float> jet_pfParticleNetAK4JetTags_probb, jet_pfParticleNetAK4JetTags_probc, jet_pfParticleNetAK4JetTags_probuds,jet_pfParticleNetAK4JetTags_probg, jet_pfParticleNetAK4JetTags_probtauh;  
 
 
@@ -412,9 +440,31 @@ private:
 	
     vector<double> AK8PuppiJets_pt;
     vector<double> AK8PuppiJets_eta;
-	vector<double> AK8PuppiJets_phi;
-	vector<double> AK8PuppiJets_mass;
+    vector<double> AK8PuppiJets_phi;
+    vector<double> AK8PuppiJets_mass;
+    vector<double> AK8PuppiJets_rawsoftdropmass;
+    vector<double> AK8PuppiJets_rawsubjet0_pt;
+    vector<double> AK8PuppiJets_rawsubjet0_eta;
+    vector<double> AK8PuppiJets_rawsubjet0_phi;
+    vector<double> AK8PuppiJets_rawsubjet0_mass;
+    vector<double> AK8PuppiJets_rawsubjet1_pt;
+    vector<double> AK8PuppiJets_rawsubjet1_eta;
+    vector<double> AK8PuppiJets_rawsubjet1_phi;
+    vector<double> AK8PuppiJets_rawsubjet1_mass;
+    vector<double> AK8PuppiJets_subjet0_pt;
+    vector<double> AK8PuppiJets_subjet0_eta;
+    vector<double> AK8PuppiJets_subjet0_phi;
+    vector<double> AK8PuppiJets_subjet0_mass;
+    vector<double> AK8PuppiJets_subjet1_pt;
+    vector<double> AK8PuppiJets_subjet1_eta;
+    vector<double> AK8PuppiJets_subjet1_phi;
+    vector<double> AK8PuppiJets_subjet1_mass;
     vector<double> AK8PuppiJets_softdropmass;
+    map<string, double> AK8PuppiJets_Lpt_softdropmass_Up;
+    map<string, double> AK8PuppiJets_Lpt_softdropmass_Down;
+    //vector<string> UncertaintySources_AK4PFPuppi;
+    //vector<double> AK8PuppiJets_Lpt_softdropmass_Up;
+    //vector<double> AK8PuppiJets_Lpt_softdropmass_Down;
 
     vector<float> jet_pfParticleNetJetTags_TvsQCD,jet_pfParticleNetJetTags_WvsQCD,jet_pfParticleNetJetTags_ZvsQCD,jet_pfParticleNetJetTags_H4qvsQCD,jet_pfParticleNetJetTags_HbbvsQCD,jet_pfParticleNetJetTags_HccvsQCD;
  
@@ -611,7 +661,7 @@ private:
     vector<float> AK4PuppiJets_eta_float;
     vector<float> AK4PuppiJets_phi_float;
     vector<float> AK4PuppiJets_mass_float;
-	
+
 	vector<float> AK8PuppiJets_pt_float;
     vector<float> AK8PuppiJets_eta_float;
     vector<float> AK8PuppiJets_phi_float;
@@ -634,13 +684,14 @@ private:
 
     //Input edm
     edm::EDGetTokenT<edm::View<pat::Electron> > elecSrc_;
-    edm::EDGetTokenT<edm::View<pat::Electron> > elecUnSSrc_;
+    //edm::EDGetTokenT<edm::View<pat::Electron> > elecUnSSrc_;
     edm::EDGetTokenT<edm::View<pat::Muon> > muonSrc_;
     //edm::EDGetTokenT<edm::View<pat::Tau> > tauSrc_;
     //edm::EDGetTokenT<edm::View<pat::Photon> > photonSrc_;
     edm::EDGetTokenT<edm::View<pat::Jet> > jetSrc_;
     edm::EDGetTokenT<edm::View<pat::Jet> > AK4PuppiJetSrc_;
     edm::EDGetTokenT<edm::View<pat::Jet> > AK8PuppiJetSrc_;
+    edm::EDGetTokenT<edm::View<pat::Jet> > AK8PFPuppiSoftDropPackedSrc_;
     edm::EDGetTokenT<BXVector<l1t::Jet>> bxvCaloJetSrc_;
     //edm::EDGetTokenT<edm::View<reco::PFJet>> hltPFJetForBtagSrc_;
     //edm::EDGetTokenT<edm::View<reco::PFJet>> hltAK4PFJetsCorrectedSrc_;
@@ -668,7 +719,7 @@ private:
     edm::EDGetTokenT<double> rhoSrcSUS_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSrc_;
     edm::EDGetTokenT<pat::PackedCandidateCollection> pfCandsSrc_;
-    edm::EDGetTokenT<edm::View<pat::PFParticle> > fsrPhotonsSrc_;
+//    edm::EDGetTokenT<edm::View<pat::PFParticle> > fsrPhotonsSrc_;
     edm::EDGetTokenT<reco::GenParticleCollection> prunedgenParticlesSrc_;
     edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedgenParticlesSrc_;
     edm::EDGetTokenT<edm::View<reco::GenJet> > genJetsSrc_;
@@ -689,7 +740,7 @@ private:
     float jetpt_cut, jeteta_cut;
     std::string elecID;
     bool isMC, isSignal;
-    bool isHcc, isZqq, isZcc, isZbb;
+    bool isHcc, isZqq, isZcc, isZbb, ispreEE, isBCDE;
     float mH;
     float crossSection;
     bool weightEvents;
@@ -717,7 +768,7 @@ private:
     int year;///use to choose Muon BDT
     bool isCode4l;
 
-edm::ESGetToken<JetCorrectorParametersCollection, JetCorrectionsRecord> mPayloadToken;
+//edm::ESGetToken<JetCorrectorParametersCollection, JetCorrectionsRecord> mPayloadToken;
 
 std::string res_pt_config;
 std::string res_phi_config;
@@ -737,7 +788,7 @@ std::string res_sf_config;
 
     string EleBDT_name_161718;
     string heepID_name_161718;
-
+    string uncertainty_source_path;
 };
 
 
@@ -745,14 +796,15 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     histContainer_(),
     elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronSrc"))),
     //elecSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
-    elecUnSSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
+    //elecUnSSrc_(consumes<edm::View<pat::Electron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronUnSSrc"))),
     muonSrc_(consumes<edm::View<pat::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonSrc"))),
     //tauSrc_(consumes<edm::View<pat::Tau> >(iConfig.getUntrackedParameter<edm::InputTag>("tauSrc"))),
     //photonSrc_(consumes<edm::View<pat::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("photonSrc"))),
     jetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("jetSrc"))),
     AK4PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("AK4PuppiJetSrc"))),
     //AK4PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK4PuppiJetSrc"))),
-	AK8PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK8PuppiJetSrc"))),
+    AK8PuppiJetSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK8PuppiJetSrc"))),
+    AK8PFPuppiSoftDropPackedSrc_(consumes<edm::View<pat::Jet> >(iConfig.getUntrackedParameter<edm::InputTag>("AK8PFPuppiSoftDropPackedSrc"))),
     bxvCaloJetSrc_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("bxvCaloJetSrc"))),
     //hltPFJetForBtagSrc_(consumes<edm::View<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("hltPFJetForBtagSrc"))),
     //hltAK4PFJetsCorrectedSrc_(consumes<edm::View<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("hltAK4PFJetsCorrectedSrc"))),
@@ -779,7 +831,7 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     rhoSrcSUS_(consumes<double>(iConfig.getUntrackedParameter<edm::InputTag>("rhoSrcSUS"))),
     pileupSrc_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupSrc"))),
     pfCandsSrc_(consumes<pat::PackedCandidateCollection>(iConfig.getUntrackedParameter<edm::InputTag>("pfCandsSrc"))),
-    fsrPhotonsSrc_(consumes<edm::View<pat::PFParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("fsrPhotonsSrc"))),
+//    fsrPhotonsSrc_(consumes<edm::View<pat::PFParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("fsrPhotonsSrc"))),
     prunedgenParticlesSrc_(consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("prunedgenParticlesSrc"))),
     packedgenParticlesSrc_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("packedgenParticlesSrc"))),
     genJetsSrc_(consumes<edm::View<reco::GenJet> >(iConfig.getUntrackedParameter<edm::InputTag>("genJetsSrc"))),
@@ -808,6 +860,8 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     isZqq(iConfig.getUntrackedParameter<bool>("isZqq")),
     isZcc(iConfig.getUntrackedParameter<bool>("isZcc")),
     isZbb(iConfig.getUntrackedParameter<bool>("isZbb")),
+    ispreEE(iConfig.getUntrackedParameter<bool>("ispreEE")),
+    isBCDE(iConfig.getUntrackedParameter<bool>("isBCDE")),
     mH(iConfig.getUntrackedParameter<double>("mH",0.0)),
     crossSection(iConfig.getUntrackedParameter<double>("CrossSection",1.0)),
     weightEvents(iConfig.getUntrackedParameter<bool>("weightEvents",false)),
@@ -850,7 +904,8 @@ HccAna::HccAna(const edm::ParameterSet& iConfig) :
     // 2018
     // to select correct training
     isCode4l(iConfig.getUntrackedParameter<bool>("isCode4l",true)),
-mPayloadToken    {esConsumes(edm::ESInputTag("", iConfig.getParameter<std::string>("payload")))}
+    //mPayloadToken    {esConsumes(edm::ESInputTag("", iConfig.getParameter<std::string>("payload")))},
+    uncertainty_source_path(iConfig.getUntrackedParameter<std::string>("uncertainty_source_path_src",""))
 {
   
     if(!isMC){reweightForPU = false;}
@@ -1003,8 +1058,8 @@ HccAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     if (verbose) cout<<electrons->size()<<" total electrons in the collection"<<endl;
 
     // electron before scale/smearing corrections
-    edm::Handle<edm::View<pat::Electron> > electronsUnS;
-    iEvent.getByToken(elecUnSSrc_,electronsUnS);
+    //edm::Handle<edm::View<pat::Electron> > electronsUnS;
+    //iEvent.getByToken(elecUnSSrc_,electronsUnS);
 
     // muon collection
     edm::Handle<edm::View<pat::Muon> > muons;
@@ -1052,8 +1107,8 @@ HccAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(pfCandsSrc_,pfCands);
 
     // FSR Photons
-    edm::Handle<edm::View<pat::PFParticle> > photonsForFsr;
-    iEvent.getByToken(fsrPhotonsSrc_,photonsForFsr);
+    //edm::Handle<edm::View<pat::PFParticle> > photonsForFsr;
+    //iEvent.getByToken(fsrPhotonsSrc_,photonsForFsr);
   
     // Jets
     edm::Handle<edm::View<pat::Jet> > jets;
@@ -1063,9 +1118,13 @@ HccAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<edm::View<pat::Jet> > AK4PuppiJets;
     iEvent.getByToken(AK4PuppiJetSrc_ ,AK4PuppiJets);
 
-	// Puppi AK8jets with ParticleNet taggers
-	     edm::Handle<edm::View<pat::Jet> > AK8PuppiJets;
-	    iEvent.getByToken(AK8PuppiJetSrc_ ,AK8PuppiJets);
+    // Puppi AK8jets with ParticleNet taggers
+    edm::Handle<edm::View<pat::Jet> > AK8PuppiJets;
+    iEvent.getByToken(AK8PuppiJetSrc_ ,AK8PuppiJets);
+
+    // Subjets of PUPPI soft drop algorithm
+    edm::Handle<edm::View<pat::Jet> > AK8PFPuppiSoftDropJets;
+    iEvent.getByToken(AK8PFPuppiSoftDropPackedSrc_ ,AK8PFPuppiSoftDropJets);
 	
     //L1 Jets                                       
     edm::Handle<BXVector<l1t::Jet>> bxvCaloJets;
@@ -1078,6 +1137,19 @@ HccAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //L1 HT Sum                                       
     edm::Handle<BXVector<l1t::EtSum>> bxvCaloHT;
     iEvent.getByToken(bxvCaloHTSrc_,bxvCaloHT);
+
+    //JEC Uncertainties
+    /*
+    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+    iSetup.get<JetCorrectionsRecord>().get("AK4PFPuppi", JetCorParColl);
+    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+    JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
+
+    //try that it works
+    jecUnc->setJetEta(0.5);
+    jecUnc->setJetPt(90);
+    cout<<jecUnc->getUncertainty(true)<<endl;
+    */
 
     //HLT hltAK4PFJetsCorrectedSrc
     /*edm::Handle<edm::View<reco::PFJet>>  hltAK4PFJetsCorrected;
@@ -1149,28 +1221,58 @@ HccAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  }
       cout<<"haveJetTags"<<haveJetTags<<endl;*/
 		
-    if (!jecunc) {
+//    if (!jecunc) {
 
 
 
 //        edm::ESHandle<JetCorrectorParametersCollection> jetCorrParameterSet;
-//        iSetup.get<JetCorrectionsRecord>().get("AK4PFchs", jetCorrParameterSet);
+//        iSetup.get<JetCorrectionsRecord>().get("AK4PFPuppi", jetCorrParameterSet);
 
+ 
+//auto const& jetCorrParameterSet = iSetup.getData(mPayloadToken);//"AK4PFchs");
+//std::vector<JetCorrectorParametersCollection::key_type> keys;
+//jetCorrParameterSet.validKeys(keys);
 
-auto const& jetCorrParameterSet = iSetup.getData(mPayloadToken);//"AK4PFchs");
-std::vector<JetCorrectorParametersCollection::key_type> keys;
-jetCorrParameterSet.validKeys(keys);
-
-
+//for(long unsigned int you=0;you<keys.size();you=you+1){
+//	cout<<keys.at(you)<<endl;
+//}
 //        const JetCorrectorParameters& jetCorrParameters = (*jetCorrParameterSet)["Uncertainty"]; 
-        JetCorrectorParameters jetCorrParameters = (jetCorrParameterSet)["Uncertainty"];
+        
+        //JetCorrectorParameters jetCorrParameters = (jetCorrParameterSet)["Uncertainty"];
+	//JetCorrectorParameters jetCorrParameters(uncertainty_source_path, "Total");
+/*
+        for (int isrc = 0; isrc < nsrc; isrc++) {
+		const char *name = srcnames[isrc];
+                //JetCorrectorParameters jetCorrParameters = (jetCorrParameterSet)[name];
+		JetCorrectorParameters p(uncertainty_source_path, name);
+		vsrc.push_back(new JetCorrectionUncertainty(p));
+	} // for isrc
 
-
-
-
-
-        jecunc.reset(new JetCorrectionUncertainty(jetCorrParameters));
-    }
+	//double jetpt(156);
+	//double jeteta(-1.16);
+	//double sum2_up(0);
+	
+        for (int isrc = 0; isrc < nsrc; isrc++) {
+		JetCorrectionUncertainty *unc = vsrc[isrc];
+		unc->setJetPt(jetpt);
+		unc->setJetEta(jeteta);
+		double sup = unc->getUncertainty(true); // up variation
+		//cout<<srcnames[isrc]<<": "<<sup<<endl;
+		unc->setJetPt(jetpt);
+		unc->setJetEta(jeteta);
+		double sdw = unc->getUncertainty(false); // down variation
+		sum2_up += pow(sup,2);
+	} 
+*/
+	//JetCorrectionUncertainty *jecunc = new JetCorrectionUncertainty(jetCorrParameters);
+        //jecunc.reset(new JetCorrectionUncertainty(jetCorrParameters));
+	//try that it works
+	//jecunc->setJetEta(jeteta);
+	//jecunc->setJetPt(jetpt);
+	//double total_unc = jecunc->getUncertainty(true);
+	//cout<<"Total uncertainty: "<<total_unc<<endl;
+	//cout<<"Uncertainty sum: "<<sqrt(sum2_up)<<endl;
+//    }
 
 
 //JME::JetResolution::Token resolution_pt_token;
@@ -1266,7 +1368,7 @@ jetCorrParameterSet.validKeys(keys);
 	
 	//ALLlep_pt.clear(); ALLlep_eta.clear(); ALLlep_phi.clear(); ALLlep_mass.clear(); ALLlep_id.clear();
 	Ele_pt.clear(); Ele_eta.clear(); Ele_phi.clear(); Ele_mass.clear(); Ele_dxy.clear(); Ele_dz.clear(); Ele_id.clear(); Ele_hcalIso.clear(); Ele_ecalIso.clear(); Ele_trackIso.clear(); Ele_isEB.clear(); Ele_IsoCal.clear(); /*Ele_PF_Iso_R04.clear();*/ Ele_isPassID.clear();
-    Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_dxy.clear(); Muon_dz.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear(); Muon_PassLooseID.clear();
+    Muon_pt.clear(); Muon_eta.clear(); Muon_phi.clear(); Muon_mass.clear(); Muon_dxy.clear(); Muon_dz.clear(); Muon_id.clear(); Muon_PF_Iso_R04.clear(); Muon_PassLooseID.clear(); Muon_isPF.clear();
     AK4lep_pt.clear(); AK4lep_eta.clear(); AK4lep_phi.clear(); AK4lep_mass.clear(); AK4lep_id.clear();
 
 	//	Nmu = 0; Ne = 0;
@@ -1332,10 +1434,25 @@ jetCorrParameterSet.validKeys(keys);
     hltAK4PFJetsCorrected_mass.clear();
 
     // Puppi AK4jets with ParticleNet taggers
+    JetVetoMap = false;
     AK4PuppiJets_pt.clear();
     AK4PuppiJets_eta.clear();
     AK4PuppiJets_phi.clear();
-    AK4PuppiJets_mass.clear();
+    AK4PuppiJets_mass.clear();    
+    AK4PuppiJets_energy.clear();
+    AK4PuppiJets_NHF.clear();
+    AK4PuppiJets_NEF.clear();
+    AK4PuppiJets_NumConst.clear();
+    AK4PuppiJets_NM.clear();
+    AK4PuppiJets_MUF.clear();
+    AK4PuppiJets_CHF.clear();
+    AK4PuppiJets_CHM.clear();
+    AK4PuppiJets_CEF.clear();
+    AK4PuppiJets_EF.clear();
+    AK4PuppiJets_HF.clear();
+    AK4PuppiJets_PFJetID.clear();
+    AK4PuppiJets_overlapPFmuons.clear();
+    AK4PuppiJets_isloose.clear();
 
     jet_pfParticleNetAK4JetTags_probb.clear(); jet_pfParticleNetAK4JetTags_probc.clear(); jet_pfParticleNetAK4JetTags_probuds.clear(); jet_pfParticleNetAK4JetTags_probg.clear(); jet_pfParticleNetAK4JetTags_probtauh.clear();
 
@@ -1351,7 +1468,27 @@ jetCorrParameterSet.validKeys(keys);
     AK8PuppiJets_eta.clear();
     AK8PuppiJets_phi.clear();
     AK8PuppiJets_mass.clear();
+    AK8PuppiJets_rawsubjet0_pt.clear();
+    AK8PuppiJets_rawsubjet0_eta.clear();
+    AK8PuppiJets_rawsubjet0_phi.clear();
+    AK8PuppiJets_rawsubjet0_mass.clear();
+    AK8PuppiJets_rawsubjet1_pt.clear();
+    AK8PuppiJets_rawsubjet1_eta.clear();
+    AK8PuppiJets_rawsubjet1_phi.clear();
+    AK8PuppiJets_rawsubjet1_mass.clear();
+    AK8PuppiJets_subjet0_pt.clear();
+    AK8PuppiJets_subjet0_eta.clear();
+    AK8PuppiJets_subjet0_phi.clear();
+    AK8PuppiJets_subjet0_mass.clear();
+    AK8PuppiJets_subjet1_pt.clear();
+    AK8PuppiJets_subjet1_eta.clear();
+    AK8PuppiJets_subjet1_phi.clear();
+    AK8PuppiJets_subjet1_mass.clear();
+    AK8PuppiJets_rawsoftdropmass.clear();
     AK8PuppiJets_softdropmass.clear();
+    //UncertaintySources_AK4PFPuppi.clear();
+    AK8PuppiJets_Lpt_softdropmass_Up.clear();
+    AK8PuppiJets_Lpt_softdropmass_Down.clear();
 
     jet_pfParticleNetJetTags_TvsQCD.clear(); jet_pfParticleNetJetTags_WvsQCD.clear(); jet_pfParticleNetJetTags_ZvsQCD.clear(); jet_pfParticleNetJetTags_H4qvsQCD.clear(); jet_pfParticleNetJetTags_HbbvsQCD.clear(); jet_pfParticleNetJetTags_HccvsQCD.clear();
  
@@ -1865,7 +2002,7 @@ if(trigConditionData && verbose)
         if (verbose) cout<<"before vector assign"<<std::endl;
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, AK4PuppiJets,  hltAK4PFJetsCorrected, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
         
-				setTreeVariables(iEvent, iSetup, goodJets, selectedMergedJets, AK4PuppiJets, AK8PuppiJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons, PV);
+				setTreeVariables(iEvent, iSetup, goodJets, selectedMergedJets, AK4PuppiJets, AK8PuppiJets, AK8PFPuppiSoftDropJets,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons, PV);
 				
         //setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, hltjetsForBTag,  hltAK4PFJetsCorrected, pfJetTagCollectionParticleNetprobc , pfJetTagCollectionParticleNetprobb , pfJetTagCollectionParticleNetprobuds , pfJetTagCollectionParticleNetprobg ,pfJetTagCollectionParticleNetprobtauh ,  bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
 				//setTreeVariables(iEvent, iSetup, goodJets, goodJetQGTagger,goodJetaxis2, goodJetptD, goodJetmult, selectedMergedJets, bxvCaloJets, bxvCaloMuons, bxvCaloHT, AllMuons, AllElectrons);
@@ -2093,7 +2230,8 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("Trigger_l1decision",&Trigger_l1decision);
     tree->Branch("Trigger_hltname",&Trigger_hltname);
     tree->Branch("Trigger_hltdecision",&Trigger_hltdecision);
-		
+    tree->Branch("ispreEE",&ispreEE);		
+    tree->Branch("isBCDE",&isBCDE);
 
     /*tree->Branch("passedFullSelection",&passedFullSelection,"passedFullSelection/O");
     tree->Branch("passedZ4lSelection",&passedZ4lSelection,"passedZ4lSelection/O");
@@ -2176,6 +2314,7 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("Muon_dxy",&Muon_dxy);
     tree->Branch("Muon_dz",&Muon_dz);
     tree->Branch("Muon_PassLooseID", &Muon_PassLooseID);
+    tree->Branch("Muon_isPF",&Muon_isPF);
     tree->Branch("AK4lep_id",&AK4lep_id);
     tree->Branch("AK4lep_pt",&AK4lep_pt);
     tree->Branch("AK4lep_eta",&AK4lep_eta);
@@ -2373,11 +2512,26 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("pt_leadingjet_pt30_eta2p5_jerdn",&pt_leadingjet_pt30_eta2p5_jerdn,"pt_leadingjet_pt30_eta2p5_jerdn/F");*/
 
     // Puppi AK4jets with ParticleNet taggers
+    tree->Branch("JetVetoMap",&JetVetoMap);
     tree->Branch("AK4PuppiJets_pt",&AK4PuppiJets_pt_float);
     tree->Branch("AK4PuppiJets_eta",&AK4PuppiJets_eta_float);
     tree->Branch("AK4PuppiJets_phi",&AK4PuppiJets_phi_float);
     tree->Branch("AK4PuppiJets_mass",&AK4PuppiJets_mass_float);
-   
+    tree->Branch("AK4PuppiJets_energy",&AK4PuppiJets_energy);
+    tree->Branch("AK4PuppiJets_NHF",&AK4PuppiJets_NHF);
+    tree->Branch("AK4PuppiJets_NEF",&AK4PuppiJets_NEF);
+    tree->Branch("AK4PuppiJets_NumConst",&AK4PuppiJets_NumConst);
+    tree->Branch("AK4PuppiJets_NM",&AK4PuppiJets_NM);
+    tree->Branch("AK4PuppiJets_MUF",&AK4PuppiJets_MUF);
+    tree->Branch("AK4PuppiJets_CHF",&AK4PuppiJets_CHF);
+    tree->Branch("AK4PuppiJets_CHM",&AK4PuppiJets_CHM);
+    tree->Branch("AK4PuppiJets_CEF",&AK4PuppiJets_CEF);
+    tree->Branch("AK4PuppiJets_EF",&AK4PuppiJets_EF);
+    tree->Branch("AK4PuppiJets_HF",&AK4PuppiJets_HF);
+    tree->Branch("AK4PuppiJets_PFJetID",&AK4PuppiJets_PFJetID);
+    tree->Branch("AK4PuppiJets_overlapPFmuons",&AK4PuppiJets_overlapPFmuons);
+    tree->Branch("AK4PuppiJets_isloose",&AK4PuppiJets_isloose);
+
     //ParticleNet discriminants
     tree->Branch("jet_pfParticleNetAK4JetTags_probb", &jet_pfParticleNetAK4JetTags_probb);	
     tree->Branch("jet_pfParticleNetAK4JetTags_probc", &jet_pfParticleNetAK4JetTags_probc);	
@@ -2407,7 +2561,27 @@ void HccAna::bookPassedEventTree(TString treeName, TTree *tree)
 	tree->Branch("AK8PuppiJets_eta",&AK8PuppiJets_eta_float);
 	tree->Branch("AK8PuppiJets_phi",&AK8PuppiJets_phi_float);
 	tree->Branch("AK8PuppiJets_mass",&AK8PuppiJets_mass_float);
-        tree->Branch("AK8PuppiJets_softdropmass",&AK8PuppiJets_softdropmass);
+	tree->Branch("AK8PuppiJets_rawsubjet0_pt",&AK8PuppiJets_rawsubjet0_pt);
+	tree->Branch("AK8PuppiJets_rawsubjet0_eta",&AK8PuppiJets_rawsubjet0_eta);
+	tree->Branch("AK8PuppiJets_rawsubjet0_phi",&AK8PuppiJets_rawsubjet0_phi);
+	tree->Branch("AK8PuppiJets_rawsubjet0_mass",&AK8PuppiJets_rawsubjet0_mass);
+	tree->Branch("AK8PuppiJets_rawsubjet1_pt",&AK8PuppiJets_rawsubjet1_pt);
+        tree->Branch("AK8PuppiJets_rawsubjet1_eta",&AK8PuppiJets_rawsubjet1_eta);
+        tree->Branch("AK8PuppiJets_rawsubjet1_phi",&AK8PuppiJets_rawsubjet1_phi);
+        tree->Branch("AK8PuppiJets_rawsubjet1_mass",&AK8PuppiJets_rawsubjet1_mass);
+	tree->Branch("AK8PuppiJets_subjet0_pt",&AK8PuppiJets_subjet0_pt);
+        tree->Branch("AK8PuppiJets_subjet0_eta",&AK8PuppiJets_subjet0_eta);
+        tree->Branch("AK8PuppiJets_subjet0_phi",&AK8PuppiJets_subjet0_phi);
+        tree->Branch("AK8PuppiJets_subjet0_mass",&AK8PuppiJets_subjet0_mass);
+        tree->Branch("AK8PuppiJets_subjet1_pt",&AK8PuppiJets_subjet1_pt);
+        tree->Branch("AK8PuppiJets_subjet1_eta",&AK8PuppiJets_subjet1_eta);
+        tree->Branch("AK8PuppiJets_subjet1_phi",&AK8PuppiJets_subjet1_phi);
+        tree->Branch("AK8PuppiJets_subjet1_mass",&AK8PuppiJets_subjet1_mass);
+        tree->Branch("AK8PuppiJets_rawsoftdropmass",&AK8PuppiJets_rawsoftdropmass);
+	tree->Branch("AK8PuppiJets_softdropmass",&AK8PuppiJets_softdropmass);
+	//tree->Branch("UncertaintySources_AK4PFPuppi",&UncertaintySources_AK4PFPuppi);
+	tree->Branch("AK8PuppiJets_Lpt_softdropmass_Up",&AK8PuppiJets_Lpt_softdropmass_Up);
+	tree->Branch("AK8PuppiJets_Lpt_softdropmass_Down",&AK8PuppiJets_Lpt_softdropmass_Down);
 
  	tree->Branch("particleNetWithMass_TvsQCD", &jet_pfParticleNetJetTags_TvsQCD);
         tree->Branch("particleNetWithMass_WvsQCD", &jet_pfParticleNetJetTags_WvsQCD);
@@ -2642,6 +2816,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                                    std::vector<pat::Jet> selectedMergedJets,
                                    edm::Handle<edm::View<pat::Jet> > AK4PuppiJets,
                                    edm::Handle<edm::View<pat::Jet> > AK8PuppiJets,
+				   edm::Handle<edm::View<pat::Jet> > AK8PFPuppiSoftDropJets,
                                  //edm::Handle<std::vector<reco::PFJet>> hltjets,
                                  //edm::Handle<edm::View<reco::PFJet>> hltjetsForBTag,
                                  //edm::Handle<edm::View<reco::PFJet>> hltAK4PFJetsCorrected,
@@ -2666,6 +2841,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
 
     // Jet Info
     //std::cout<<"ELISA = "<<"good jets "<<goodJets.size()<<std::endl;
+    /*
     for( unsigned int k = 0; k < goodJets.size(); k++) {
       jet_pt.push_back(goodJets[k].pt());
       jet_pt_raw.push_back(goodJets[k].pt());///jet Pt without JEC applied
@@ -2708,7 +2884,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
 
        
     } // loop over jets
-
+*/
 
 	for(unsigned int jmu=0; jmu<AllMuons.size(); jmu++){
        		/*ALLlep_pt.push_back(AllMuons[jmu].pt());
@@ -2726,6 +2902,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
                 Muon_PF_Iso_R04.push_back((AllMuons[jmu].pfIsolationR04().sumChargedHadronPt + TMath::Max(AllMuons[jmu].pfIsolationR04().sumNeutralHadronEt + AllMuons[jmu].pfIsolationR04().sumPhotonEt - AllMuons[jmu].pfIsolationR04().sumPUPt/2.0,0.0))/AllMuons[jmu].pt());
                 Muon_PassLooseID.push_back(AllMuons[jmu].isLooseMuon());
 //                if(AllMuons[jmu].pt()>20 && abs(AllMuons[jmu].eta())<2.4 && AllMuons[jmu].isLooseMuon() && Mu_PF_Iso_R04<0.4 ){Nmu=Nmu+1;}
+                Muon_isPF.push_back(AllMuons[jmu].isPFMuon());                
         }
 
 	for(unsigned int jel=0; jel<AllElectrons.size(); jel++){
@@ -2802,8 +2979,108 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       AK8PuppiJets_eta.push_back(AK8PuppiJets->at(jjet).eta());
       AK8PuppiJets_phi.push_back(AK8PuppiJets->at(jjet).phi());
       AK8PuppiJets_mass.push_back(AK8PuppiJets->at(jjet).mass());
-      AK8PuppiJets_softdropmass.push_back(AK8PuppiJets->at(jjet).userFloat("ak8PFJetsPuppiSoftDropMass"));
+      AK8PuppiJets_rawsoftdropmass.push_back(AK8PuppiJets->at(jjet).userFloat("ak8PFJetsPuppiSoftDropMass"));
+      //cout<<AK8PuppiJets->at(jjet).nSubjetCollections()<<endl;
+      //cout<<AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").size()<<endl;
+      //cout<<"new jet"<<endl;
+      if(AK8PuppiJets->at(jjet).nSubjetCollections()>0){
+	      
+	      if(AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").size()==2){
+		      //cout<<"AK8 sdm:  "<<AK8PuppiJets->at(jjet).userFloat("ak8PFJetsPuppiSoftDropMass")<<endl;
+		      //cout<<"AK8 pt:  "<<AK8PuppiJets->at(jjet).pt()<<endl;
+		      auto rawp4_0 = AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").at(0)->correctedP4("Uncorrected");
+		      auto rawp4_1 = AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").at(1)->correctedP4("Uncorrected");
+		      //cout<<"AK4 #1 pt: "<<(rawp4_0).pt()<<endl;
+		      int  bestidx0 = -1;
+		      float bestdr0 = 9999.;
+		      int  bestidx1 = -1;
+                      float bestdr1 = 9999.;
+		      for(unsigned int sjet=0; sjet<AK8PFPuppiSoftDropJets->size(); sjet++){
+			      float dr0 = deltaR(rawp4_0.eta(), rawp4_0.phi(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").eta(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").phi());
+			      float dr1 = deltaR(rawp4_1.eta(), rawp4_1.phi(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").eta(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").phi());
+			      if (dr0 < bestdr0) {
+				      bestidx0 = sjet;
+				      bestdr0 = dr0;
+			      }
+			      if (dr1 < bestdr1) {
+                                      bestidx1 = sjet;
+                                      bestdr1 = dr1;
+                              }
+		      }
+		      //cout<<"bestidx0: "<<bestidx0<<endl;
+		      //cout<<"bestidx1: "<<bestidx1<<endl;
+		      //cout<<"bestdr0:  "<<bestdr0<<endl;
+                      //cout<<"bestdr1:  "<<bestdr1<<endl;
+		      //cout<<"AK4 #1 uncorrected delta pt: "<<rawp4_0.pt() - AK8PFPuppiSoftDropJets->at(bestidx0).correctedP4("Uncorrected").pt()<<endl;
+		      //cout<<"AK4 #2 uncorrected delta pt: "<<rawp4_1.pt() - AK8PFPuppiSoftDropJets->at(bestidx1).correctedP4("Uncorrected").pt()<<endl;
+		      //cout<<"AK4 #1 corrected delta pt: "<<rawp4_0.pt() - AK8PFPuppiSoftDropJets->at(bestidx0).pt()<<endl;
+                      //cout<<"AK4 #2 corrected delta pt: "<<rawp4_1.pt() - AK8PFPuppiSoftDropJets->at(bestidx1).pt()<<endl;
+		      TLorentzVector ak4_0, ak4_1;
+		      ak4_0.SetPtEtaPhiM(AK8PFPuppiSoftDropJets->at(bestidx0).pt(),AK8PFPuppiSoftDropJets->at(bestidx0).eta(),AK8PFPuppiSoftDropJets->at(bestidx0).phi(),AK8PFPuppiSoftDropJets->at(bestidx0).mass());
+		      ak4_1.SetPtEtaPhiM(AK8PFPuppiSoftDropJets->at(bestidx1).pt(),AK8PFPuppiSoftDropJets->at(bestidx1).eta(),AK8PFPuppiSoftDropJets->at(bestidx1).phi(),AK8PFPuppiSoftDropJets->at(bestidx1).mass());
+		      //auto p4_0 = AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").at(0)->correctedP4(0);
 
+                      //cout<<"AK4 corrected pt       "<<AK8PFPuppiSoftDropJets->at(bestidx0).pt()<<endl;
+		      //cout<<"AK4 new corrected pt   "<<p4_0.pt()<<endl;
+
+		      //cout<<"AK4 uncorrected mass sum: "<<(rawp4_0+rawp4_1).M()<<endl;
+		      //cout<<"AK4 corrected mass sum: "<<(ak4_0+ak4_1).M()<<endl;
+		      //cout<<"AK4 uncorrected pt sum: "<<(rawp4_0+rawp4_1).Pt()<<endl;
+                      //cout<<"AK4 corrected pt sum: "<<(ak4_0+ak4_1).Pt()<<endl;
+		      AK8PuppiJets_softdropmass.push_back((ak4_0+ak4_1).M());
+		      //AK8PuppiJets_subjet0.push_back(ak4_0);
+		      //AK8PuppiJets_subjet1.push_back(ak4_1);
+		      //AK8PuppiJets_rawsubjet0.push_back(rawak4_0);
+                      //AK8PuppiJets_rawsubjet1.push_back(rawak4_1);
+		      AK8PuppiJets_rawsubjet0_pt.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).correctedP4("Uncorrected").pt());
+		      AK8PuppiJets_rawsubjet0_eta.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).correctedP4("Uncorrected").eta());
+		      AK8PuppiJets_rawsubjet0_phi.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).correctedP4("Uncorrected").phi());
+		      AK8PuppiJets_rawsubjet0_mass.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).correctedP4("Uncorrected").mass());
+		      AK8PuppiJets_rawsubjet1_pt.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).correctedP4("Uncorrected").pt());
+                      AK8PuppiJets_rawsubjet1_eta.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).correctedP4("Uncorrected").eta());
+                      AK8PuppiJets_rawsubjet1_phi.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).correctedP4("Uncorrected").phi());
+                      AK8PuppiJets_rawsubjet1_mass.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).correctedP4("Uncorrected").mass());
+
+
+		      AK8PuppiJets_subjet0_pt.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).pt());
+		      AK8PuppiJets_subjet0_eta.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).eta());
+		      AK8PuppiJets_subjet0_phi.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).phi());
+		      AK8PuppiJets_subjet0_mass.push_back(AK8PFPuppiSoftDropJets->at(bestidx0).mass());
+		      AK8PuppiJets_subjet1_pt.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).pt());
+                      AK8PuppiJets_subjet1_eta.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).eta());
+                      AK8PuppiJets_subjet1_phi.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).phi());
+                      AK8PuppiJets_subjet1_mass.push_back(AK8PFPuppiSoftDropJets->at(bestidx1).mass());
+		      //cout<<"-----------------------------------------------------------"<<endl;
+//		      cout<<"AK4 #1 mass: "<<AK8PuppiJets->at(jjet).subjets().at(idx1)->correctedP4("Uncorrected").mass()<<endl;
+//		      cout<<"AK4 #2 mass: "<<AK8PuppiJets->at(jjet).subjets().at(idx2).mass()<<endl;
+//		      cout<<"AK4 mass: "<<AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").at(0).key()<<endl;
+	      }
+	      else{
+		      AK8PuppiJets_softdropmass.push_back(-1);
+		      AK8PuppiJets_rawsubjet0_pt.push_back(-100);
+                      AK8PuppiJets_rawsubjet0_eta.push_back(-100);
+                      AK8PuppiJets_rawsubjet0_phi.push_back(-100);
+                      AK8PuppiJets_rawsubjet0_mass.push_back(-100);
+                      AK8PuppiJets_rawsubjet1_pt.push_back(-100);
+                      AK8PuppiJets_rawsubjet1_eta.push_back(-100);
+                      AK8PuppiJets_rawsubjet1_phi.push_back(-100);
+                      AK8PuppiJets_rawsubjet1_mass.push_back(-100);
+
+
+		      AK8PuppiJets_subjet0_pt.push_back(-100);
+		      AK8PuppiJets_subjet0_eta.push_back(-100);
+		      AK8PuppiJets_subjet0_phi.push_back(-100);
+		      AK8PuppiJets_subjet0_mass.push_back(-100);
+		      AK8PuppiJets_subjet1_pt.push_back(-100);
+                      AK8PuppiJets_subjet1_eta.push_back(-100);
+                      AK8PuppiJets_subjet1_phi.push_back(-100);
+                      AK8PuppiJets_subjet1_mass.push_back(-100);
+	      }
+	      
+	      //if(AK8PuppiJets->at(jjet).subjets("SoftDropPuppi").size()>2){
+		      //cout<<"AAAAAAAAAAAAAAAAAAAAAAAAAA"<<endl;
+	      //}
+      }
       if(AK8PuppiJets->at(jjet).pt()>leadingAK8_pt){
              subleadingAK8_pt = leadingAK8_pt;
              leadingAK8_pt=AK8PuppiJets->at(jjet).pt();
@@ -2859,6 +3136,91 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       
     }
 
+/*
+    TFile *f1;
+    if(ispreEE){
+	    f1 = TFile::Open("src/Hcc/HccAna/data/Summer22_23Sep2023_RunCD_v1.root","read");
+    }
+    else{
+	    f1 = TFile::Open("src/Hcc/HccAna/data/Summer22EE_23Sep2023_RunEFG_v1.root","read");
+    }
+    TH2D *h_jetvetomap = (TH2D*)f1->Get("jetvetomap");
+*/
+    if(isMC && leadingAK8_pt_idx>-1){
+    if(AK8PuppiJets->at(leadingAK8_pt_idx).subjets("SoftDropPuppi").size()==2){
+
+	    // get the corrected softdtopjets
+	    auto rawp4_0 = AK8PuppiJets->at(leadingAK8_pt_idx).subjets("SoftDropPuppi").at(0)->correctedP4("Uncorrected");
+	    auto rawp4_1 = AK8PuppiJets->at(leadingAK8_pt_idx).subjets("SoftDropPuppi").at(1)->correctedP4("Uncorrected");
+	    int  bestidx0 = -1;
+	    float bestdr0 = 9999.;
+            int  bestidx1 = -1;
+            float bestdr1 = 9999.;
+            for(unsigned int sjet=0; sjet<AK8PFPuppiSoftDropJets->size(); sjet++){
+		    float dr0 = deltaR(rawp4_0.eta(), rawp4_0.phi(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").eta(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").phi());
+                    float dr1 = deltaR(rawp4_1.eta(), rawp4_1.phi(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").eta(), AK8PFPuppiSoftDropJets->at(sjet).correctedP4("Uncorrected").phi());
+                    if (dr0 < bestdr0) {
+			    bestidx0 = sjet;
+                            bestdr0 = dr0;
+                    }
+                    if (dr1 < bestdr1) {
+			    bestidx1 = sjet;
+                            bestdr1 = dr1;
+                    }
+            }
+	    //corrected pt and eta of the 2 softdrop subjets
+            double jetpt0 = AK8PFPuppiSoftDropJets->at(bestidx0).pt();
+            double jeteta0 = AK8PFPuppiSoftDropJets->at(bestidx0).eta();
+	    double jetpt1 = AK8PFPuppiSoftDropJets->at(bestidx1).pt();
+            double jeteta1 = AK8PFPuppiSoftDropJets->at(bestidx1).eta();
+
+	    //loop on the uncertainty sources
+	    for (int isrc = 0; isrc < nsrc; isrc++) {
+		    const char *name = srcnames[isrc];
+		    JetCorrectorParameters p(uncertainty_source_path, name);
+		    vsrc.push_back(new JetCorrectionUncertainty(p));
+		    double pt0 = jetpt0;
+		    double eta0 = jeteta0;
+		    double pt1 = jetpt1;
+                    double eta1 = jeteta1;
+		    
+		    JetCorrectionUncertainty *unc = vsrc[isrc];
+		    unc->setJetPt(pt0);
+                    unc->setJetEta(eta0);
+                    double vr0 = unc->getUncertainty(true); //  variation
+		    unc->setJetPt(pt1);
+                    unc->setJetEta(eta1);
+                    double vr1 = unc->getUncertainty(true); //  variation
+		    for(int shifting = -1; shifting < 2; shifting = shifting +2){
+			    //cout<<shifting<<endl;
+			    double pt0Cor_shifted =  pt0*(1+shifting*vr0) ; // shifting = +1(up), or -1(down)
+			    double pt1Cor_shifted =  pt1*(1+shifting*vr1) ; // shifting = +1(up), or -1(down)
+			    TLorentzVector ak4_0, ak4_1;
+			    ak4_0.SetPtEtaPhiM(pt0Cor_shifted,AK8PFPuppiSoftDropJets->at(bestidx0).eta(),AK8PFPuppiSoftDropJets->at(bestidx0).phi(),AK8PFPuppiSoftDropJets->at(bestidx0).mass());
+                            ak4_1.SetPtEtaPhiM(pt1Cor_shifted,AK8PFPuppiSoftDropJets->at(bestidx1).eta(),AK8PFPuppiSoftDropJets->at(bestidx1).phi(),AK8PFPuppiSoftDropJets->at(bestidx1).mass());
+
+			    if(shifting==-1){
+				    AK8PuppiJets_Lpt_softdropmass_Down.insert(pair<string, double>(srcnames[isrc], (ak4_0+ak4_1).M()));
+	//			    AK8PuppiJets_Lpt_softdropmass_Down[ srcnames[isrc]]=(ak4_0+ak4_1).M();
+                                   			    
+			    }
+			    if(shifting==1){
+				    AK8PuppiJets_Lpt_softdropmass_Up.insert(pair<string, double>(srcnames[isrc], (ak4_0+ak4_1).M()));
+                                    //AK8PuppiJets_Lpt_softdropmass_Up[ srcnames[isrc]]=(ak4_0+ak4_1).M();
+                            }
+		    }
+	    }
+	    //Print the map content
+	  //  for (map<string, double>::iterator i = AK8PuppiJets_Lpt_softdropmass_Down.begin(); i != AK8PuppiJets_Lpt_softdropmass_Down.end(); i++) {
+	//	    cout << i->first << " -> " << i->second << ", "<<endl;
+	    //}
+    }
+    }
+           /* 
+    for(unsigned int jjet=0; jjet<AK8PuppiJets->size(); jjet++){
+	    assert(AK8PuppiJets->at(leadingAK8_pt_idx).pt() >= AK8PuppiJets->at(jjet).pt());
+    }
+*/
     //Puppi AK4jets with ParticleNet taggers
 
     for(unsigned int ijet=0; ijet<AK4PuppiJets->size(); ijet++){
@@ -2866,7 +3228,10 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       AK4PuppiJets_eta.push_back(AK4PuppiJets->at(ijet).eta());
       AK4PuppiJets_phi.push_back(AK4PuppiJets->at(ijet).phi());
       AK4PuppiJets_mass.push_back(AK4PuppiJets->at(ijet).mass());
-      
+      AK4PuppiJets_energy.push_back(AK4PuppiJets->at(ijet).energy());
+      //cout<<"E2: "<<AK4PuppiJets->at(ijet).energy()*AK4PuppiJets->at(ijet).energy()<<endl;
+      //cout<<"m2+p2: "<< AK4PuppiJets->at(ijet).pt()*AK4PuppiJets->at(ijet).pt() + AK4PuppiJets->at(ijet).mass()*AK4PuppiJets->at(ijet).mass()<<endl;
+
       jet_pfParticleNetAK4JetTags_probb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probb"));
       jet_pfParticleNetAK4JetTags_probc.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probc"));
       jet_pfParticleNetAK4JetTags_probuds.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfParticleNetAK4JetTags:probuds"));
@@ -2884,19 +3249,68 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
       jet_pfDeepCSVAK4JetTags_probbb.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probbb")); 
       jet_pfDeepCSVAK4JetTags_probc.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probc")); 
       jet_pfDeepCSVAK4JetTags_probudsg.push_back(AK4PuppiJets->at(ijet).bDiscriminator("pfDeepCSVJetTags:probudsg"));
+     
+          
+      AK4PuppiJets_NHF.push_back(AK4PuppiJets->at(ijet).neutralHadronEnergyFraction());
+      AK4PuppiJets_NEF.push_back(AK4PuppiJets->at(ijet).neutralEmEnergyFraction());
+      AK4PuppiJets_NumConst.push_back(AK4PuppiJets->at(ijet).chargedMultiplicity()+ AK4PuppiJets->at(ijet).neutralMultiplicity());
+      AK4PuppiJets_NM.push_back(AK4PuppiJets->at(ijet).neutralMultiplicity());
+      AK4PuppiJets_MUF.push_back(AK4PuppiJets->at(ijet).muonEnergyFraction());
+      AK4PuppiJets_CHF.push_back(AK4PuppiJets->at(ijet).chargedHadronEnergyFraction());
+      AK4PuppiJets_CHM.push_back(AK4PuppiJets->at(ijet).chargedMultiplicity());
+      AK4PuppiJets_CEF.push_back(AK4PuppiJets->at(ijet).chargedEmEnergyFraction());
+      AK4PuppiJets_EF.push_back(AK4PuppiJets->at(ijet).neutralEmEnergyFraction()+AK4PuppiJets->at(ijet).chargedEmEnergyFraction());
+      AK4PuppiJets_HF.push_back(AK4PuppiJets->at(ijet).neutralHadronEnergyFraction()+AK4PuppiJets->at(ijet).chargedHadronEnergyFraction());
+      //AK4PuppiJets_EF.push_back(AK4PuppiJets->at(ijet).emEnergyFraction());
+      //AK4PuppiJets_HF.push_back(AK4PuppiJets->at(ijet).energyFractionHadronic());
+     
+      bool ipassPFID = false;
+      if(isBCDE){
+	      if(abs(AK4PuppiJets->at(ijet).eta())<=2.6 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.9 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.9 && (AK4PuppiJets->at(ijet).chargedMultiplicity()+ AK4PuppiJets->at(ijet).neutralMultiplicity()) > 1 &&  AK4PuppiJets->at(ijet).chargedHadronEnergyFraction() > 0.01 && AK4PuppiJets->at(ijet).chargedMultiplicity() > 0 ){ipassPFID = true;}
+	      if(abs(AK4PuppiJets->at(ijet).eta())>2.6 &&abs(AK4PuppiJets->at(ijet).eta())<=2.7 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.9 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.99){ipassPFID = true;}
+	      if(abs(AK4PuppiJets->at(ijet).eta())>2.7 &&abs(AK4PuppiJets->at(ijet).eta())<=3.0 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.9999){ipassPFID = true;}
+	      if(abs(AK4PuppiJets->at(ijet).eta())>3.0 &&abs(AK4PuppiJets->at(ijet).eta())<=5.0 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.9 && AK4PuppiJets->at(ijet).neutralMultiplicity()>2){ipassPFID = true;}
+      }
+      else{
+              if(abs(AK4PuppiJets->at(ijet).eta())<=2.6 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.99 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.9 && (AK4PuppiJets->at(ijet).chargedMultiplicity()+ AK4PuppiJets->at(ijet).neutralMultiplicity()) > 1 &&  AK4PuppiJets->at(ijet).chargedHadronEnergyFraction() > 0.01 && AK4PuppiJets->at(ijet).chargedMultiplicity() > 0 ){ipassPFID = true;}
+              if(abs(AK4PuppiJets->at(ijet).eta())>2.6 &&abs(AK4PuppiJets->at(ijet).eta())<=2.7 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.9 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.99){ipassPFID = true;}
+              if(abs(AK4PuppiJets->at(ijet).eta())>2.7 &&abs(AK4PuppiJets->at(ijet).eta())<=3.0 && AK4PuppiJets->at(ijet).neutralHadronEnergyFraction() < 0.99){ipassPFID = true;}
+              if(abs(AK4PuppiJets->at(ijet).eta())>3.0 &&abs(AK4PuppiJets->at(ijet).eta())<=5.0 && AK4PuppiJets->at(ijet).neutralEmEnergyFraction() < 0.4 && AK4PuppiJets->at(ijet).neutralMultiplicity()>=2){ipassPFID = true;}
+      }
+      AK4PuppiJets_PFJetID.push_back(ipassPFID);
+
+      bool ioverlapPFmuon = false;
+      for( unsigned int pmu = 0; pmu < AllMuons.size(); pmu++) {
+	      if(AllMuons[pmu].isPFMuon()){
+		      float dR = sqrt(
+				      (AK4PuppiJets->at(ijet).eta()-AllMuons[pmu].eta())*(AK4PuppiJets->at(ijet).eta()-AllMuons[pmu].eta())+
+				      (AK4PuppiJets->at(ijet).phi()-AllMuons[pmu].phi())*(AK4PuppiJets->at(ijet).phi()-AllMuons[pmu].phi())
+				      );
+		      if(dR < 0.2){
+			      ioverlapPFmuon = true;
+		      }
+	      }
+      }
+      AK4PuppiJets_overlapPFmuons.push_back(ioverlapPFmuon);
+
+      AK4PuppiJets_isloose.push_back(AK4PuppiJets->at(ijet).pt()>15 && ipassPFID && (AK4PuppiJets->at(ijet).neutralEmEnergyFraction()+AK4PuppiJets->at(ijet).chargedEmEnergyFraction())<0.9 && !ioverlapPFmuon);
+/*
+      if(AK4PuppiJets->at(ijet).pt()>15 && ipassPFID && (AK4PuppiJets->at(ijet).neutralEmEnergyFraction()+AK4PuppiJets->at(ijet).chargedEmEnergyFraction())<0.9 && !ioverlapPFmuon){
+	      //double veto = h_jetvetomap->GetBinContent(h_jetvetomap->FindBin(AK4PuppiJets->at(ijet).eta(), AK4PuppiJets->at(ijet).phi()));
+	      //double veto = h_jetvetomap->GetBinContent(h_jetvetomap->FindBin(-0.270647,0.166501));
+	      //double veto = h_jetvetomap->GetBinContent(38,39);
+	      //cout<<veto<<endl;
+	      double veto = 0;
+	      if(veto>0){
+	      //if(5>6){
+		      JetVetoMap=true;
+	      }
+      }
+      */
+      //f1->Close();
+      //delete f1;
       
-      /*bool passPFtightID_LepVeto = false;
-
-      float NHF = AK4PuppiJets->at(ijet).neutralHadronEnergyFraction();
-      float NEF = AK4PuppiJets->at(ijet).neutralEmEnergyFraction();
-      float NumConst = AK4PuppiJets->at(ijet).chargedMultiplicity()+ AK4PuppiJets->at(ijet).neutralMultiplicity();
-      float MUF = AK4PuppiJets->at(ijet).muonEnergyFraction();
-      float CHF = AK4PuppiJets->at(ijet).chargedHadronEnergyFraction();
-      float CHM = AK4PuppiJets->at(ijet).chargedMultiplicity();
-      float CEF = AK4PuppiJets->at(ijet).chargedEmEnergyFraction();
-
-      if(NHF < 0.9 && NEF < 0.9 && NumConst > 1 && MUF < 0.8 && CHF > 0.01 && CHM > 0 && CEF <0.8){passPFtightID_LepVeto = true;}
-
+      /*
       bool passPUtightID = false;
 
             if(AK4PuppiJets->at(ijet).pt()>20 && AK4PuppiJets->at(ijet).pt()<30 && AK4PuppiJets->at(ijet).userFloat("pileupJetId:fullDiscriminant")>0.69){passPUtightID = true;}
@@ -2905,7 +3319,9 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
 
       bool overlaps_loose_lepton = false;*/
     }
-
+    //f1->Close();
+    //delete f1;
+/*
     for( unsigned int kmu = 0; kmu < AllMuons.size(); kmu++) {
       for(unsigned int kk=0; kk < AK4PuppiJets->size(); kk++){
         bool isMuonFound = false;			
@@ -2935,7 +3351,7 @@ void HccAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSetup& 
             }
           }
         }
-
+*/
       //Zbb event selection
       /*if(leadingAK8_pt_idx>-1&& subleadingAK8_pt_idx>-1){
 	if(AK8PuppiJets->at(leadingAK8_pt_idx).pt()>450 && abs(AK8PuppiJets->at(leadingAK8_pt_idx).eta())<2.4 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")>80 && AK8PuppiJets->at(leadingAK8_pt_idx).userFloat("ak8PFJetsPuppiSoftDropMass")<110 && AK8PuppiJets->at(subleadingAK8_pt_idx).pt()>200 && abs(AK8PuppiJets->at(subleadingAK8_pt_idx).eta())<2.4){
