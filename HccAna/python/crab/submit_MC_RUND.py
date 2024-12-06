@@ -62,7 +62,7 @@ config.Data.allowNonValidInputDataset = False
 # config.Data.lumiMask = ''
 config.section_("Site")
 config.Site.storageSite = "T2_IT_Bari"
-config.Site.blacklist = ['T1_US_FNAL'] 
+#config.Site.blacklist = ['T1_US_FNAL'] 
 
 
 config.section_("User")
